@@ -1,5 +1,5 @@
 import streamlit as st
-import openai
+from openai import OpenAI
 import os
 from dotenv import load_dotenv
 import json
@@ -8,7 +8,7 @@ import json
 load_dotenv()
 
 # Configure OpenAI
-openai.api_key = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # Page config
 st.set_page_config(
@@ -70,7 +70,7 @@ def generate_linkedin_posts(topic, industry, tone, audience, post_type):
     """
     
     try:
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "You are a LinkedIn content expert who creates viral, engaging posts that drive high engagement rates."},
