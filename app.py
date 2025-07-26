@@ -2,7 +2,6 @@ import streamlit as st
 from openai import OpenAI
 import os
 from dotenv import load_dotenv
-import json
 
 # Load environment variables
 load_dotenv()
@@ -40,18 +39,12 @@ st.markdown("""
         border-left: 4px solid #0066cc;
         margin: 1rem 0;
     }
-    .post-number {
-        font-weight: bold;
-        color: #0066cc;
-        font-size: 1.1rem;
-    }
 </style>
 """, unsafe_allow_html=True)
 
 def generate_linkedin_posts(topic, industry, tone, audience, post_type):
     """Generate LinkedIn posts using OpenAI API"""
     
-    # Create a detailed prompt based on inputs
     prompt = f"""
     Create 5 engaging LinkedIn posts about "{topic}" for the {industry} industry.
     
@@ -70,7 +63,6 @@ def generate_linkedin_posts(topic, industry, tone, audience, post_type):
     """
     
     try:
-        client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
@@ -80,12 +72,6 @@ def generate_linkedin_posts(topic, industry, tone, audience, post_type):
             max_tokens=2000,
             temperature=0.7
         )
-        
-        return response.choices[0].message.content
-        
-    except Exception as e:
-        st.error(f"Error generating posts: {str(e)}")
-        return None
         
         return response.choices[0].message.content
         
@@ -166,7 +152,7 @@ def main():
             return
             
         if not os.getenv("OPENAI_API_KEY"):
-            st.error("OpenAI API key not found. Please set OPENAI_API_KEY in your .env file.")
+            st.error("OpenAI API key not found. Please check your configuration.")
             return
         
         # Show loading spinner
@@ -186,24 +172,18 @@ def main():
                     with st.expander(f"📝 Post {i}", expanded=True):
                         st.markdown(f'<div class="post-container">{post}</div>', unsafe_allow_html=True)
                         
-                        col1, col2 = st.columns(2)
-                        with col1:
-                            if st.button(f"📋 Copy Post {i}", key=f"copy_{i}"):
-                                st.write("Post copied to clipboard! (Feature would be implemented)")
-                        with col2:
-                            if st.button(f"✏️ Edit Post {i}", key=f"edit_{i}"):
-                                st.write("Edit feature would open here")
+                        if st.button(f"📋 Copy Post {i}", key=f"copy_{i}"):
+                            st.success(f"Post {i} ready to copy!")
                 
                 # Download option
                 st.markdown("---")
-                if st.button("📥 Download All Posts as Text File"):
-                    all_posts = "\n\n" + "="*50 + "\n\n".join([f"POST {i+1}:\n{post}" for i, post in enumerate(posts)])
-                    st.download_button(
-                        label="Download Posts",
-                        data=all_posts,
-                        file_name=f"linkedin_posts_{topic.replace(' ', '_')}.txt",
-                        mime="text/plain"
-                    )
+                all_posts = "\n\n" + "="*50 + "\n\n".join([f"POST {i+1}:\n{post}" for i, post in enumerate(posts)])
+                st.download_button(
+                    label="📥 Download All Posts",
+                    data=all_posts,
+                    file_name=f"linkedin_posts_{topic.replace(' ', '_')}.txt",
+                    mime="text/plain"
+                )
             else:
                 st.error("Could not parse the generated posts. Please try again.")
     
@@ -222,33 +202,10 @@ def main():
         with col3:
             st.markdown("### 📈 Boost Engagement")
             st.markdown("AI-optimized content designed for maximum LinkedIn engagement")
-        
-        # Example section
-        st.markdown("---")
-        st.markdown("## 💡 Example Output")
-        
-        with st.expander("See what kind of posts you'll get"):
-            st.markdown("""
-            **POST 1: Industry Insight**
-            
-            🚀 The future of remote work isn't just about working from home—it's about working from anywhere with purpose.
-            
-            After 3 years of managing distributed teams, here's what I've learned:
-            
-            ✅ Async communication beats constant meetings
-            ✅ Results matter more than hours logged
-            ✅ Company culture can thrive digitally
-            
-            The companies that embrace this shift aren't just surviving—they're attracting top talent from everywhere.
-            
-            What's your biggest remote work challenge? Drop it in the comments 👇
-            
-            #RemoteWork #FutureOfWork #Leadership #ProductivityTips #WorkFromAnywhere
-            """)
 
-# Footer
+    # Footer
     st.markdown("---")
-    st.markdown("**Built with ❤️ using Streamlit and OpenAI**")
+    st.markdown("**Ready to dominate LinkedIn? Generate your posts above! 🚀**")
 
 if __name__ == "__main__":
     main()
