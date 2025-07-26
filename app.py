@@ -70,6 +70,7 @@ def generate_linkedin_posts(topic, industry, tone, audience, post_type):
     """
     
     try:
+        client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
@@ -79,6 +80,12 @@ def generate_linkedin_posts(topic, industry, tone, audience, post_type):
             max_tokens=2000,
             temperature=0.7
         )
+        
+        return response.choices[0].message.content
+        
+    except Exception as e:
+        st.error(f"Error generating posts: {str(e)}")
+        return None
         
         return response.choices[0].message.content
         
