@@ -7,7 +7,6 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Configure OpenAI
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # Page config
 st.set_page_config(
@@ -63,6 +62,9 @@ def generate_linkedin_posts(topic, industry, tone, audience, post_type):
     """
     
     try:
+        # Create client inside function to avoid initialization errors
+        client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
