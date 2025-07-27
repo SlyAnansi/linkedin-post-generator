@@ -7,8 +7,6 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
-# Configure OpenAI
-
 # Page config
 st.set_page_config(
     page_title="LinkedIn Post Generator",
@@ -182,6 +180,35 @@ What metrics are you tracking in this space?
     
     return "\n\n" + "="*50 + "\n\n".join([f"POST {i+1}:\n{post}" for i, post in enumerate(posts)])
 
+def parse_posts(content):
+    """Parse the generated content into individual posts"""
+    if "=" in content and "POST" in content:
+        # Handle the template format
+        sections = content.split("="*50)
+        posts = []
+        for section in sections[1:]:  # Skip first empty section
+            if section.strip():
+                posts.append(section.strip())
+        return posts
+    else:
+        # Handle other formats
+        posts = []
+        lines = content.split('\n')
+        current_post = ""
+        
+        for line in lines:
+            if line.strip().startswith(('POST 1:', 'POST 2:', 'POST 3:', 'POST 4:', 'POST 5:')):
+                if current_post:
+                    posts.append(current_post.strip())
+                current_post = line.replace('POST ', '').replace(':', '').strip() + '\n'
+            else:
+                current_post += line + '\n'
+        
+        if current_post:
+            posts.append(current_post.strip())
+        
+        return posts if posts else [content]  # Return content as single post if parsing fails
+
 # Main App Interface
 def main():
     # Header
@@ -235,8 +262,8 @@ def main():
             st.warning("Please enter a topic to generate posts about.")
             return
             
-        if not os.getenv("OPENAI_API_KEY"):
-            st.error("OpenAI API key not found. Please check your configuration.")
+        if not os.getenv("HUGGINGFACE_API_KEY"):
+            st.error("Hugging Face API key not found. Please check your configuration.")
             return
         
         # Show loading spinner
