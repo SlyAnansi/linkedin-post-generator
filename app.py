@@ -44,6 +44,14 @@ st.markdown("""
 def generate_linkedin_posts(topic, industry, tone, audience, post_type):
     """Generate LinkedIn posts using OpenAI API"""
     
+    # Debug: Check if API key exists
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        st.error("No API key found!")
+        return None
+    
+    st.info(f"API key found: {api_key[:10]}...")  # Show first 10 chars for debugging
+    
     prompt = f"""
     Create 5 engaging LinkedIn posts about "{topic}" for the {industry} industry.
     
@@ -62,8 +70,11 @@ def generate_linkedin_posts(topic, industry, tone, audience, post_type):
     """
     
     try:
-        client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        st.info("Creating OpenAI client...")
+        client = OpenAI(api_key=api_key)
+        st.info("Client created successfully!")
         
+        st.info("Making API call...")
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
@@ -74,10 +85,11 @@ def generate_linkedin_posts(topic, industry, tone, audience, post_type):
             temperature=0.7
         )
         
+        st.info("API call successful!")
         return response.choices[0].message.content
         
     except Exception as e:
-        st.error(f"Error generating posts: {str(e)}")
+        st.error(f"Detailed error: {type(e).__name__}: {str(e)}")
         return None
 
 def parse_posts(content):
