@@ -1,5 +1,6 @@
 import streamlit as st
-import openai
+import requests
+import json
 import os
 from dotenv import load_dotenv
 
@@ -42,63 +43,144 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 def generate_linkedin_posts(topic, industry, tone, audience, post_type):
-    """Generate LinkedIn posts using OpenAI API"""
+    """Generate LinkedIn posts using Hugging Face API"""
     
-    # Set API key
-    openai.api_key = os.getenv("OPENAI_API_KEY")
-    
-    prompt = f"""
-    Create 5 engaging LinkedIn posts about "{topic}" for the {industry} industry.
-    
-    Requirements:
-    - Target audience: {audience}
-    - Tone: {tone}
-    - Post type: {post_type}
-    - Each post should be 150-300 words
-    - Include relevant hashtags (3-5 per post)
-    - Make them scroll-stopping and engaging
-    - Include a clear call-to-action
-    - Use line breaks for readability
-    - Add emojis where appropriate
-    
-    Format each post clearly with "POST 1:", "POST 2:", etc.
-    """
+    prompt = f"""Create 5 engaging LinkedIn posts about "{topic}" for the {industry} industry.
+
+Target audience: {audience}
+Tone: {tone}
+Post type: {post_type}
+
+Requirements for each post:
+- 150-300 words
+- Include 3-5 relevant hashtags
+- Include a call-to-action
+- Use emojis appropriately
+- Format clearly as POST 1:, POST 2:, etc.
+
+POST 1:"""
     
     try:
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "You are a LinkedIn content expert who creates viral, engaging posts that drive high engagement rates."},
-                {"role": "user", "content": prompt}
-            ],
-            max_tokens=2000,
-            temperature=0.7
-        )
+        API_URL = "https://api-inference.huggingface.co/models/microsoft/DialoGPT-medium"
+        headers = {"Authorization": f"Bearer {os.getenv('HUGGINGFACE_API_KEY')}"}
         
-        return response.choices[0].message.content
+        payload = {
+            "inputs": prompt,
+            "parameters": {
+                "max_new_tokens": 1500,
+                "temperature": 0.7,
+                "top_p": 0.9,
+                "do_sample": True
+            },
+            "options": {
+                "wait_for_model": True
+            }
+        }
         
-    except Exception as e:
-        st.error(f"Error generating posts: {str(e)}")
-        return None
-
-def parse_posts(content):
-    """Parse the generated content into individual posts"""
-    posts = []
-    lines = content.split('\n')
-    current_post = ""
-    
-    for line in lines:
-        if line.strip().startswith(('POST 1:', 'POST 2:', 'POST 3:', 'POST 4:', 'POST 5:')):
-            if current_post:
-                posts.append(current_post.strip())
-            current_post = line.replace('POST ', '').replace(':', '').strip() + '\n'
+        response = requests.post(API_URL, headers=headers, json=payload)
+        
+        if response.status_code == 200:
+            result = response.json()
+            if isinstance(result, list) and len(result) > 0:
+                generated_text = result[0].get('generated_text', '')
+                # Clean up the response
+                if generated_text.startswith(prompt):
+                    generated_text = generated_text[len(prompt):]
+                
+                # If response is too short, try a simpler approach
+                if len(generated_text) < 200:
+                    return generate_simple_posts(topic, industry, tone, audience, post_type)
+                
+                return generated_text
+            else:
+                return generate_simple_posts(topic, industry, tone, audience, post_type)
         else:
-            current_post += line + '\n'
+            st.error(f"API Error: {response.status_code}")
+            return generate_simple_posts(topic, industry, tone, audience, post_type)
+            
+    except Exception as e:
+        st.error(f"Error: {str(e)}")
+        return generate_simple_posts(topic, industry, tone, audience, post_type)
+
+def generate_simple_posts(topic, industry, tone, audience, post_type):
+    """Fallback function with template-based posts"""
     
-    if current_post:
-        posts.append(current_post.strip())
+    posts = [
+        f"""🚀 The future of {topic} in {industry} is here!
+
+As someone targeting {audience}, I've been exploring how {topic} is transforming our industry. The results are fascinating.
+
+Here's what I've learned:
+✅ Innovation is accelerating faster than ever
+✅ Early adopters are seeing significant advantages  
+✅ The time to act is now
+
+What's your experience with {topic}? Share your thoughts below! 👇
+
+#{industry.replace(' ', '')} #{topic.replace(' ', '')} #Innovation #FutureOfWork #Leadership""",
+
+        f"""💡 {post_type}: Why {topic} matters for {industry} professionals
+
+Speaking to my fellow {audience}, this trend can't be ignored anymore.
+
+3 key insights:
+🔹 Market demand is shifting rapidly
+🔹 Skills requirements are evolving
+🔹 Competitive advantage comes from early adoption
+
+The question isn't IF this will impact your career, but WHEN.
+
+How are you preparing for these changes?
+
+#{industry.replace(' ', '')} #{topic.replace(' ', '')} #CareerDevelopment #ProfessionalGrowth""",
+
+        f"""🎯 Personal experience: How {topic} changed my perspective on {industry}
+
+As someone who works with {audience} daily, I've seen firsthand how {topic} is reshaping our field.
+
+The transformation has been remarkable:
+• Increased efficiency across teams
+• Better outcomes for stakeholders  
+• New opportunities emerging daily
+
+If you're in {industry}, this is your moment to lead the change.
+
+What steps are you taking to stay ahead?
+
+#{industry.replace(' ', '')} #{topic.replace(' ', '')} #Leadership #Change #Growth""",
+
+        f"""🔥 Hot take: {topic} is the game-changer {industry} has been waiting for
+
+Controversial opinion? Maybe. But here's why I believe this...
+
+After working with {audience} for years, I've noticed a pattern:
+→ Those who embrace change thrive
+→ Those who resist get left behind
+→ The middle ground is disappearing
+
+{topic} isn't just a trend - it's the new standard.
+
+Agree or disagree? Let's discuss! 💬
+
+#{industry.replace(' ', '')} #{topic.replace(' ', '')} #Controversial #Innovation #FutureThinking""",
+
+        f"""📊 Data doesn't lie: {topic} is transforming {industry} faster than expected
+
+Latest research shows something interesting for {audience}...
+
+The numbers are compelling:
+📈 Adoption rates are accelerating
+📈 ROI is exceeding expectations
+📈 Competitive gaps are widening
+
+If you're in {industry}, the data suggests it's time to act.
+
+What metrics are you tracking in this space?
+
+#{industry.replace(' ', '')} #{topic.replace(' ', '')} #Data #Analytics #Strategy #Growth"""
+    ]
     
-    return posts
+    return "\n\n" + "="*50 + "\n\n".join([f"POST {i+1}:\n{post}" for i, post in enumerate(posts)])
 
 # Main App Interface
 def main():
