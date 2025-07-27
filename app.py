@@ -62,7 +62,6 @@ def generate_linkedin_posts(topic, industry, tone, audience, post_type):
     """
     
     try:
-        # Create client inside function to avoid initialization errors
         client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
         
         response = client.chat.completions.create(
