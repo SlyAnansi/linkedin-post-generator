@@ -2,6 +2,7 @@ import streamlit as st
 import requests
 import json
 import os
+import random
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -44,143 +45,230 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-def generate_linkedin_posts(topic, industry, tone, audience, post_type):
-    """Generate LinkedIn posts using Hugging Face API"""
-    
-    prompt = f"""Create 5 engaging LinkedIn posts about "{topic}" for the {industry} industry.
-
-Target audience: {audience}
-Tone: {tone}
-Post type: {post_type}
-
-Requirements for each post:
-- 150-300 words
-- Include 3-5 relevant hashtags
-- Include a call-to-action
-- Use emojis appropriately
-- Format clearly as POST 1:, POST 2:, etc.
-
-POST 1:"""
-    
-    try:
-        API_URL = "https://api-inference.huggingface.co/models/microsoft/DialoGPT-medium"
-        headers = {"Authorization": f"Bearer {os.getenv('HUGGINGFACE_API_KEY')}"}
-        
-        payload = {
-            "inputs": prompt,
-            "parameters": {
-                "max_new_tokens": 1500,
-                "temperature": 0.7,
-                "top_p": 0.9,
-                "do_sample": True
-            },
-            "options": {
-                "wait_for_model": True
-            }
-        }
-        
-        response = requests.post(API_URL, headers=headers, json=payload)
-        
-        if response.status_code == 200:
-            result = response.json()
-            if isinstance(result, list) and len(result) > 0:
-                generated_text = result[0].get('generated_text', '')
-                # Clean up the response
-                if generated_text.startswith(prompt):
-                    generated_text = generated_text[len(prompt):]
-                
-                # If response is too short, try a simpler approach
-                if len(generated_text) < 200:
-                    return generate_simple_posts(topic, industry, tone, audience, post_type)
-                
-                return generated_text
-            else:
-                return generate_simple_posts(topic, industry, tone, audience, post_type)
-        else:
-            st.error(f"API Error: {response.status_code}")
-            return generate_simple_posts(topic, industry, tone, audience, post_type)
-            
-    except Exception as e:
-        st.error(f"Error: {str(e)}")
-        return generate_simple_posts(topic, industry, tone, audience, post_type)
-
 def generate_simple_posts(topic, industry, tone, audience, post_type):
-    """Fallback function with template-based posts"""
+    """Enhanced function with multiple variations and randomization"""
     
-    posts = [
-        f"""🚀 The future of {topic} in {industry} is here!
-
-As someone targeting {audience}, I've been exploring how {topic} is transforming our industry. The results are fascinating.
-
-Here's what I've learned:
-✅ Innovation is accelerating faster than ever
-✅ Early adopters are seeing significant advantages  
-✅ The time to act is now
-
-What's your experience with {topic}? Share your thoughts below! 👇
-
-#{industry.replace(' ', '')} #{topic.replace(' ', '')} #Innovation #FutureOfWork #Leadership""",
-
-        f"""💡 {post_type}: Why {topic} matters for {industry} professionals
-
-Speaking to my fellow {audience}, this trend can't be ignored anymore.
-
-3 key insights:
-🔹 Market demand is shifting rapidly
-🔹 Skills requirements are evolving
-🔹 Competitive advantage comes from early adoption
-
-The question isn't IF this will impact your career, but WHEN.
-
-How are you preparing for these changes?
-
-#{industry.replace(' ', '')} #{topic.replace(' ', '')} #CareerDevelopment #ProfessionalGrowth""",
-
-        f"""🎯 Personal experience: How {topic} changed my perspective on {industry}
-
-As someone who works with {audience} daily, I've seen firsthand how {topic} is reshaping our field.
-
-The transformation has been remarkable:
-• Increased efficiency across teams
-• Better outcomes for stakeholders  
-• New opportunities emerging daily
-
-If you're in {industry}, this is your moment to lead the change.
-
-What steps are you taking to stay ahead?
-
-#{industry.replace(' ', '')} #{topic.replace(' ', '')} #Leadership #Change #Growth""",
-
-        f"""🔥 Hot take: {topic} is the game-changer {industry} has been waiting for
-
-Controversial opinion? Maybe. But here's why I believe this...
-
-After working with {audience} for years, I've noticed a pattern:
-→ Those who embrace change thrive
-→ Those who resist get left behind
-→ The middle ground is disappearing
-
-{topic} isn't just a trend - it's the new standard.
-
-Agree or disagree? Let's discuss! 💬
-
-#{industry.replace(' ', '')} #{topic.replace(' ', '')} #Controversial #Innovation #FutureThinking""",
-
-        f"""📊 Data doesn't lie: {topic} is transforming {industry} faster than expected
-
-Latest research shows something interesting for {audience}...
-
-The numbers are compelling:
-📈 Adoption rates are accelerating
-📈 ROI is exceeding expectations
-📈 Competitive gaps are widening
-
-If you're in {industry}, the data suggests it's time to act.
-
-What metrics are you tracking in this space?
-
-#{industry.replace(' ', '')} #{topic.replace(' ', '')} #Data #Analytics #Strategy #Growth"""
+    # Different opening hooks based on tone
+    hooks = {
+        "Professional": [
+            f"📊 Industry insight: {topic} is reshaping {industry}",
+            f"🎯 Strategic perspective on {topic} in {industry}",
+            f"📈 Market analysis: The {topic} transformation in {industry}",
+            f"🔍 Deep dive: How {topic} impacts {industry} professionals"
+        ],
+        "Conversational": [
+            f"💬 Let's talk about {topic} in {industry}",
+            f"🤔 Here's what I've been thinking about {topic}",
+            f"☕ Coffee chat topic: {topic} and its impact on {industry}",
+            f"💭 Real talk about {topic} in our industry"
+        ],
+        "Inspirational": [
+            f"🚀 The future of {topic} in {industry} starts with YOU",
+            f"✨ Transform your {industry} career with {topic}",
+            f"🌟 Why {topic} is your {industry} superpower",
+            f"💫 Unlock your potential: {topic} in {industry}"
+        ],
+        "Educational": [
+            f"📚 {topic} 101 for {industry} professionals",
+            f"🎓 What every {industry} pro should know about {topic}",
+            f"📖 The complete guide to {topic} in {industry}",
+            f"🧠 Master {topic}: A {industry} perspective"
+        ],
+        "Humorous": [
+            f"😅 {topic} in {industry}: It's complicated",
+            f"🎭 Plot twist: {topic} actually makes sense in {industry}",
+            f"😂 Me trying to explain {topic} to {industry} folks",
+            f"🤪 {topic} in {industry}: Expectations vs Reality"
+        ],
+        "Thought-provoking": [
+            f"🤯 Unpopular opinion: {topic} will change {industry} forever",
+            f"🧩 The {topic} puzzle in {industry} nobody talks about",
+            f"⚡ Controversial take: {topic} isn't what you think in {industry}",
+            f"🔥 Hot take: {topic} is the {industry} game-changer"
+        ],
+        "Personal/Storytelling": [
+            f"📖 My {topic} journey in {industry}",
+            f"💡 How {topic} changed my {industry} perspective",
+            f"🛤️ The day {topic} transformed my {industry} career",
+            f"🎯 Personal story: {topic} lessons from {industry}"
+        ]
+    }
+    
+    # Different content structures
+    insight_types = [
+        "3 key insights:",
+        "Here's what I've learned:",
+        "The data shows:",
+        "My observations:",
+        "Industry trends reveal:",
+        "Recent research indicates:",
+        "What surprised me most:"
     ]
+    
+    action_words = [
+        ["accelerating", "advancing", "evolving"],
+        ["transforming", "reshaping", "revolutionizing"], 
+        ["emerging", "developing", "expanding"],
+        ["optimizing", "enhancing", "improving"]
+    ]
+    
+    # Different CTAs
+    ctas = [
+        f"What's your experience with {topic}? Share below! 👇",
+        f"How is {topic} impacting your {industry} work?",
+        f"What {topic} trends are you seeing in {industry}?",
+        f"Thoughts on {topic} in our industry? Let's discuss! 💬",
+        f"How are you leveraging {topic} in {industry}?",
+        f"What's your {topic} success story? Drop it in comments!",
+        f"Agree or disagree? Share your {topic} perspective! 🤔"
+    ]
+    
+    # Different emoji sets
+    emoji_sets = [
+        ["🚀", "⭐", "💫", "✨"],
+        ["🎯", "📊", "📈", "🔥"],
+        ["💡", "🧠", "🔍", "💭"],
+        ["⚡", "🌟", "🎉", "🏆"],
+        ["🔧", "🛠️", "⚙️", "🔨"]
+    ]
+    
+    # Generate varied posts
+    posts = []
+    used_structures = []
+    selected_hook = random.choice(hooks.get(tone, hooks["Professional"]))
+    selected_emojis = random.choice(emoji_sets)
+    
+    # Post 1: Hook + Insights format
+    insights = random.choice(insight_types)
+    actions = [random.choice(group) for group in action_words]
+    cta = random.choice(ctas)
+    
+    post1 = f"""{selected_hook}
+
+As someone working with {audience}, I've been diving deep into how {topic} is {actions[0]} across {industry}.
+
+{insights}
+{selected_emojis[0]} Market demand is {actions[1]}
+{selected_emojis[1]} Skills requirements are {actions[2]}  
+{selected_emojis[2]} Competitive advantages are {actions[3]}
+
+{cta}
+
+#{industry.replace(' ', '')} #{topic.replace(' ', '')} #Innovation #Growth #Leadership"""
+    
+    # Post 2: Story format
+    story_starters = [
+        f"Last week, I witnessed something remarkable in {industry}",
+        f"Three months ago, I couldn't have predicted this {industry} shift",
+        f"Yesterday's {industry} meeting changed my perspective on {topic}",
+        f"I just had the most interesting conversation about {topic} with {audience}"
+    ]
+    
+    story_impacts = [
+        "productivity increased by 40%",
+        "collaboration improved dramatically",
+        "results exceeded all expectations",
+        "ROI was better than anticipated",
+        "team efficiency skyrocketed"
+    ]
+    
+    post2 = f"""{random.choice(story_starters)}.
+
+The impact of {topic} was undeniable:
+- {random.choice(story_impacts)}
+- Decision-making became more data-driven
+- Innovation cycles shortened significantly
+
+For {audience} in {industry}, this isn't just a trend—it's the new reality.
+
+How is {topic} changing your daily workflow?
+
+#{industry.replace(' ', '')} #{topic.replace(' ', '')} #Transformation #Success #RealResults"""
+    
+    # Post 3: Question/Poll format
+    poll_questions = [
+        f"Quick poll for {audience}: What's your biggest {topic} challenge in {industry}?",
+        f"Honest question: Is {topic} overhyped or underutilized in {industry}?",
+        f"Help me settle a debate: What's the #1 {topic} benefit for {industry}?",
+        f"Survey time: How ready is {industry} for widespread {topic} adoption?"
+    ]
+    
+    poll_options = [
+        ["A) Implementation complexity", "B) Cost concerns", "C) Skill gaps", "D) Resistance to change"],
+        ["A) Definitely overhyped", "B) Perfect balance", "C) Severely underutilized", "D) Too early to tell"],
+        ["A) Cost savings", "B) Efficiency gains", "C) Better outcomes", "D) Competitive advantage"],
+        ["A) Completely ready", "B) Making progress", "C) Just getting started", "D) Not ready at all"]
+    ]
+    
+    post3 = f"""{random.choice(poll_questions)}
+
+{chr(10).join(random.choice(poll_options))}
+
+Working with {audience}, I see huge variation in {topic} readiness across {industry}.
+
+Some organizations are crushing it, others are struggling to get started.
+
+Drop your vote in comments + share what's working (or not working) for you! 📊
+
+#{industry.replace(' ', '')} #{topic.replace(' ', '')} #Poll #Community #Insights"""
+    
+    # Post 4: Contrarian/Hot take format
+    contrarian_takes = [
+        f"Unpopular opinion: Most {industry} companies are doing {topic} wrong",
+        f"Hot take: {topic} isn't the problem in {industry}—implementation is",
+        f"Controversial statement: {topic} alone won't save struggling {industry} businesses",
+        f"Bold prediction: {topic} will be standard in {industry} within 18 months"
+    ]
+    
+    supporting_points = [
+        ["They're focusing on tools instead of strategy", "Training is an afterthought", "ROI measurement is inconsistent"],
+        ["Technology is solid, but change management fails", "Leadership buy-in is superficial", "Teams aren't properly prepared"],
+        ["Cultural transformation must come first", "Process optimization needs attention", "People development is the real key"],
+        ["Early adopters prove it works", "Economic pressure demands efficiency", "Competition will force adoption"]
+    ]
+    
+    post4 = f"""{random.choice(contrarian_takes)}.
+
+Here's why I believe this:
+
+{chr(10).join([f"→ {point}" for point in random.choice(supporting_points)])}
+
+For {audience}, the window of opportunity is narrowing.
+
+Am I wrong? Prove me wrong in the comments! 🔥
+
+#{industry.replace(' ', '')} #{topic.replace(' ', '')} #Controversial #RealTalk #ChangeYourMind"""
+    
+    # Post 5: Data/Research format
+    data_hooks = [
+        f"The latest {industry} research on {topic} is eye-opening",
+        f"New data reveals surprising {topic} trends in {industry}",
+        f"Just analyzed 6 months of {topic} data from {industry}",
+        f"Industry report: {topic} adoption in {industry} accelerating"
+    ]
+    
+    metrics = [
+        ["73% increase in adoption", "2.3x improvement in efficiency", "41% reduction in costs"],
+        ["89% of leaders see value", "156% ROI within 12 months", "64% faster project completion"],
+        ["92% user satisfaction rate", "78% of teams want more training", "85% would recommend to others"],
+        ["67% plan increased investment", "54% expanding implementation", "81% see competitive advantage"]
+    ]
+    
+    post5 = f"""{random.choice(data_hooks)}.
+
+Key findings for {audience}:
+
+📊 {random.choice(metrics)[0]}
+📈 {random.choice(metrics)[1]}  
+🎯 {random.choice(metrics)[2]}
+
+If you're in {industry} and not tracking these metrics, you're flying blind.
+
+What data points matter most in your {topic} journey?
+
+#{industry.replace(' ', '')} #{topic.replace(' ', '')} #Data #Research #Metrics #Results"""
+    
+    posts = [post1, post2, post3, post4, post5]
     
     return "\n\n" + "="*50 + "\n\n".join([f"POST {i+1}:\n{post}" for i, post in enumerate(posts)])
 
