@@ -30,12 +30,16 @@ st.markdown("""
         color: #666;
         margin-bottom: 2rem;
     }
-    .post-container {
-        background: #f8f9fa;
-        padding: 1rem;
+.post-container {
+        background: #ffffff;
+        padding: 1.5rem;
         border-radius: 10px;
         border-left: 4px solid #0066cc;
         margin: 1rem 0;
+        color: #212529;
+        font-weight: 500;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        line-height: 1.6;
     }
 </style>
 """, unsafe_allow_html=True)
