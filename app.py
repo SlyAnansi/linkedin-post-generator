@@ -46,138 +46,86 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 def generate_simple_posts(topic, industry, tone, audience, post_type):
-    """Enhanced function with multiple variations and randomization"""
+    """Simple function with variations that works reliably"""
     
-    # Different opening hooks based on tone
-    hooks = {
-        "Professional": [
-            f"📊 Industry insight: {topic} is reshaping {industry}",
-            f"🎯 Strategic perspective on {topic} in {industry}",
-            f"📈 Market analysis: The {topic} transformation in {industry}",
-            f"🔍 Deep dive: How {topic} impacts {industry} professionals"
-        ],
-        "Conversational": [
-            f"💬 Let's talk about {topic} in {industry}",
-            f"🤔 Here's what I've been thinking about {topic}",
-            f"☕ Coffee chat topic: {topic} and its impact on {industry}",
-            f"💭 Real talk about {topic} in our industry"
-        ],
-        "Inspirational": [
-            f"🚀 The future of {topic} in {industry} starts with YOU",
-            f"✨ Transform your {industry} career with {topic}",
-            f"🌟 Why {topic} is your {industry} superpower",
-            f"💫 Unlock your potential: {topic} in {industry}"
-        ],
-        "Educational": [
-            f"📚 {topic} 101 for {industry} professionals",
-            f"🎓 What every {industry} pro should know about {topic}",
-            f"📖 The complete guide to {topic} in {industry}",
-            f"🧠 Master {topic}: A {industry} perspective"
-        ],
-        "Humorous": [
-            f"😅 {topic} in {industry}: It's complicated",
-            f"🎭 Plot twist: {topic} actually makes sense in {industry}",
-            f"😂 Me trying to explain {topic} to {industry} folks",
-            f"🤪 {topic} in {industry}: Expectations vs Reality"
-        ],
-        "Thought-provoking": [
-            f"🤯 Unpopular opinion: {topic} will change {industry} forever",
-            f"🧩 The {topic} puzzle in {industry} nobody talks about",
-            f"⚡ Controversial take: {topic} isn't what you think in {industry}",
-            f"🔥 Hot take: {topic} is the {industry} game-changer"
-        ],
-        "Personal/Storytelling": [
-            f"📖 My {topic} journey in {industry}",
-            f"💡 How {topic} changed my {industry} perspective",
-            f"🛤️ The day {topic} transformed my {industry} career",
-            f"🎯 Personal story: {topic} lessons from {industry}"
-        ]
-    }
+    # Different hooks based on tone
+    if tone == "Professional":
+        hook = f"📊 Industry insight: {topic} is reshaping {industry}"
+    elif tone == "Conversational":
+        hook = f"💬 Let's talk about {topic} in {industry}"
+    elif tone == "Inspirational":
+        hook = f"🚀 The future of {topic} in {industry} starts with YOU"
+    elif tone == "Educational":
+        hook = f"📚 {topic} 101 for {industry} professionals"
+    elif tone == "Humorous":
+        hook = f"😅 {topic} in {industry}: It's complicated"
+    elif tone == "Thought-provoking":
+        hook = f"🤯 Unpopular opinion: {topic} will change {industry} forever"
+    else:  # Personal/Storytelling
+        hook = f"📖 My {topic} journey in {industry}"
     
-    # Different content structures
-    insight_types = [
-        "3 key insights:",
-        "Here's what I've learned:",
-        "The data shows:",
-        "My observations:",
-        "Industry trends reveal:",
-        "Recent research indicates:",
-        "What surprised me most:"
-    ]
+    # Random elements
+    import random
     
-    action_words = [
-        ["accelerating", "advancing", "evolving"],
-        ["transforming", "reshaping", "revolutionizing"], 
-        ["emerging", "developing", "expanding"],
-        ["optimizing", "enhancing", "improving"]
-    ]
+    insights_options = ["3 key insights:", "Here's what I've learned:", "The data shows:", "My observations:"]
+    insights = random.choice(insights_options)
     
-    # Different CTAs
-    ctas = [
+    action1 = random.choice(["accelerating", "advancing", "evolving"])
+    action2 = random.choice(["transforming", "reshaping", "revolutionizing"])
+    action3 = random.choice(["emerging", "developing", "expanding"])
+    
+    cta_options = [
         f"What's your experience with {topic}? Share below! 👇",
         f"How is {topic} impacting your {industry} work?",
         f"What {topic} trends are you seeing in {industry}?",
-        f"Thoughts on {topic} in our industry? Let's discuss! 💬",
-        f"How are you leveraging {topic} in {industry}?",
-        f"What's your {topic} success story? Drop it in comments!",
-        f"Agree or disagree? Share your {topic} perspective! 🤔"
+        f"Thoughts on {topic} in our industry? Let's discuss! 💬"
     ]
+    cta = random.choice(cta_options)
     
-    # Different emoji sets
-    emoji_sets = [
-        ["🚀", "⭐", "💫", "✨"],
-        ["🎯", "📊", "📈", "🔥"],
-        ["💡", "🧠", "🔍", "💭"],
-        ["⚡", "🌟", "🎉", "🏆"],
-        ["🔧", "🛠️", "⚙️", "🔨"]
-    ]
+    emoji_set = random.choice([
+        ["🚀", "⭐", "💫"],
+        ["🎯", "📊", "📈"],
+        ["💡", "🧠", "🔍"],
+        ["⚡", "🌟", "🎉"]
+    ])
     
-    # Generate varied posts
+    # Generate 5 different post types
     posts = []
-    used_structures = []
-    selected_hook = random.choice(hooks.get(tone, hooks["Professional"]))
-    selected_emojis = random.choice(emoji_sets)
     
-    # Post 1: Hook + Insights format
-    insights = random.choice(insight_types)
-    actions = [random.choice(group) for group in action_words]
-    cta = random.choice(ctas)
-    
-    post1 = f"""{selected_hook}
+    # Post 1: Insights format
+    post1 = f"""{hook}
 
-As someone working with {audience}, I've been diving deep into how {topic} is {actions[0]} across {industry}.
+As someone working with {audience}, I've been diving deep into how {topic} is {action1} across {industry}.
 
 {insights}
-{selected_emojis[0]} Market demand is {actions[1]}
-{selected_emojis[1]} Skills requirements are {actions[2]}  
-{selected_emojis[2]} Competitive advantages are {actions[3]}
+{emoji_set[0]} Market demand is {action2}
+{emoji_set[1]} Skills requirements are {action3}
+{emoji_set[2]} Innovation cycles are accelerating
 
 {cta}
 
 #{industry.replace(' ', '')} #{topic.replace(' ', '')} #Innovation #Growth #Leadership"""
     
     # Post 2: Story format
-    story_starters = [
+    story_starts = [
         f"Last week, I witnessed something remarkable in {industry}",
         f"Three months ago, I couldn't have predicted this {industry} shift",
-        f"Yesterday's {industry} meeting changed my perspective on {topic}",
-        f"I just had the most interesting conversation about {topic} with {audience}"
+        f"Yesterday's conversation about {topic} changed my perspective"
     ]
+    story_start = random.choice(story_starts)
     
-    story_impacts = [
+    impact = random.choice([
         "productivity increased by 40%",
-        "collaboration improved dramatically",
-        "results exceeded all expectations",
-        "ROI was better than anticipated",
-        "team efficiency skyrocketed"
-    ]
+        "collaboration improved dramatically", 
+        "results exceeded all expectations"
+    ])
     
-    post2 = f"""{random.choice(story_starters)}.
+    post2 = f"""{story_start}.
 
 The impact of {topic} was undeniable:
-- {random.choice(story_impacts)}
-- Decision-making became more data-driven
-- Innovation cycles shortened significantly
+• {impact}
+• Decision-making became more data-driven
+• Innovation cycles shortened significantly
 
 For {audience} in {industry}, this isn't just a trend—it's the new reality.
 
@@ -185,82 +133,72 @@ How is {topic} changing your daily workflow?
 
 #{industry.replace(' ', '')} #{topic.replace(' ', '')} #Transformation #Success #RealResults"""
     
-    # Post 3: Question/Poll format
+    # Post 3: Poll format
     poll_questions = [
-        f"Quick poll for {audience}: What's your biggest {topic} challenge in {industry}?",
+        f"Quick poll for {audience}: What's your biggest {topic} challenge?",
         f"Honest question: Is {topic} overhyped or underutilized in {industry}?",
-        f"Help me settle a debate: What's the #1 {topic} benefit for {industry}?",
-        f"Survey time: How ready is {industry} for widespread {topic} adoption?"
+        f"Help me settle a debate: What's the #1 {topic} benefit?"
     ]
+    poll_q = random.choice(poll_questions)
     
-    poll_options = [
-        ["A) Implementation complexity", "B) Cost concerns", "C) Skill gaps", "D) Resistance to change"],
-        ["A) Definitely overhyped", "B) Perfect balance", "C) Severely underutilized", "D) Too early to tell"],
-        ["A) Cost savings", "B) Efficiency gains", "C) Better outcomes", "D) Competitive advantage"],
-        ["A) Completely ready", "B) Making progress", "C) Just getting started", "D) Not ready at all"]
-    ]
-    
-    post3 = f"""{random.choice(poll_questions)}
+    post3 = f"""{poll_q}
 
-{("\n").join(random.choice(poll_options))}
+A) Implementation complexity
+B) Cost concerns
+C) Skill gaps  
+D) Resistance to change
 
 Working with {audience}, I see huge variation in {topic} readiness across {industry}.
 
 Some organizations are crushing it, others are struggling to get started.
 
-Drop your vote in comments + share what's working (or not working) for you! 📊
+Drop your vote in comments + share what's working for you! 📊
 
 #{industry.replace(' ', '')} #{topic.replace(' ', '')} #Poll #Community #Insights"""
     
-    # Post 4: Contrarian/Hot take format
-    contrarian_takes = [
+    # Post 4: Hot take format
+    hot_takes = [
         f"Unpopular opinion: Most {industry} companies are doing {topic} wrong",
         f"Hot take: {topic} isn't the problem in {industry}—implementation is",
-        f"Controversial statement: {topic} alone won't save struggling {industry} businesses",
         f"Bold prediction: {topic} will be standard in {industry} within 18 months"
     ]
+    hot_take = random.choice(hot_takes)
     
-    supporting_points = [
-        ["They're focusing on tools instead of strategy", "Training is an afterthought", "ROI measurement is inconsistent"],
-        ["Technology is solid, but change management fails", "Leadership buy-in is superficial", "Teams aren't properly prepared"],
-        ["Cultural transformation must come first", "Process optimization needs attention", "People development is the real key"],
-        ["Early adopters prove it works", "Economic pressure demands efficiency", "Competition will force adoption"]
-    ]
-    
-    post4 = f"""{random.choice(contrarian_takes)}.
+    post4 = f"""{hot_take}.
 
 Here's why I believe this:
 
-{("\n").join([f"→ {point}" for point in random.choice(supporting_points)])}
+→ Technology adoption varies widely across organizations
+→ Implementation strategy often lacks proper planning
+→ Change management is frequently an afterthought
 
 For {audience}, the window of opportunity is narrowing.
 
 Am I wrong? Prove me wrong in the comments! 🔥
 
-#{industry.replace(' ', '')} #{topic.replace(' ', '')} #Controversial #RealTalk #ChangeYourMind"""
+#{industry.replace(' ', '')} #{topic.replace(' ', '')} #Controversial #RealTalk #ChangeManagement"""
     
-    # Post 5: Data/Research format
+    # Post 5: Data format
     data_hooks = [
         f"The latest {industry} research on {topic} is eye-opening",
         f"New data reveals surprising {topic} trends in {industry}",
-        f"Just analyzed 6 months of {topic} data from {industry}",
         f"Industry report: {topic} adoption in {industry} accelerating"
     ]
+    data_hook = random.choice(data_hooks)
     
     metrics = [
-        ["73% increase in adoption", "2.3x improvement in efficiency", "41% reduction in costs"],
-        ["89% of leaders see value", "156% ROI within 12 months", "64% faster project completion"],
-        ["92% user satisfaction rate", "78% of teams want more training", "85% would recommend to others"],
-        ["67% plan increased investment", "54% expanding implementation", "81% see competitive advantage"]
+        "73% increase in adoption",
+        "2.3x improvement in efficiency", 
+        "41% reduction in costs"
     ]
     
-    post5 = f"""{random.choice(data_hooks)}.
+    post5 = f"""{data_hook}.
 
 Key findings for {audience}:
 
-📊 {random.choice(metrics)[0]}
-📈 {random.choice(metrics)[1]}  
-🎯 {random.choice(metrics)[2]}
+📊 {metrics[0]}
+📈 {metrics[1]}
+🎯 {metrics[2]}
 
 If you're in {industry} and not tracking these metrics, you're flying blind.
 
