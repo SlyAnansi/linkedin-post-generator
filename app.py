@@ -202,8 +202,7 @@ How is {topic} changing your daily workflow?
     
     post3 = f"""{random.choice(poll_questions)}
 
-{("
-").join(random.choice(poll_options))}
+{("\n").join(random.choice(poll_options))}
 
 Working with {audience}, I see huge variation in {topic} readiness across {industry}.
 
@@ -232,8 +231,7 @@ Drop your vote in comments + share what's working (or not working) for you! 📊
 
 Here's why I believe this:
 
-{("
-").join([f"→ {point}" for point in random.choice(supporting_points)])}
+{("\n").join([f"→ {point}" for point in random.choice(supporting_points)])}
 
 For {audience}, the window of opportunity is narrowing.
 
