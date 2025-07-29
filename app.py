@@ -31,7 +31,7 @@ st.markdown("""
         color: #666;
         margin-bottom: 2rem;
     }
-.post-container {
+    .post-container {
         background: #ffffff;
         padding: 1.5rem;
         border-radius: 10px;
@@ -45,80 +45,180 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-def generate_simple_posts(topic, industry, tone, audience, post_type):
-    """Simple function with variations that works reliably"""
+def generate_linkedin_posts(topic, industry, tone, audience, post_type):
+    """Generate LinkedIn posts using Hugging Face API with fallback"""
+    
+    prompt = f"""Create 5 engaging LinkedIn posts about "{topic}" for the {industry} industry.
+
+Target audience: {audience}
+Tone: {tone}
+Post type: {post_type}
+
+Requirements for each post:
+- 150-300 words
+- Include 3-5 relevant hashtags
+- Include a call-to-action
+- Use emojis appropriately
+- Format clearly as POST 1:, POST 2:, etc.
+
+POST 1:"""
+    
+    try:
+        API_URL = "https://api-inference.huggingface.co/models/microsoft/DialoGPT-medium"
+        headers = {"Authorization": f"Bearer {os.getenv('HUGGINGFACE_API_KEY')}"}
+        
+        payload = {
+            "inputs": prompt,
+            "parameters": {
+                "max_new_tokens": 1500,
+                "temperature": 0.7,
+                "top_p": 0.9,
+                "do_sample": True
+            },
+            "options": {
+                "wait_for_model": True
+            }
+        }
+        
+        response = requests.post(API_URL, headers=headers, json=payload)
+        
+        if response.status_code == 200:
+            result = response.json()
+            if isinstance(result, list) and len(result) > 0:
+                generated_text = result[0].get('generated_text', '')
+                if generated_text.startswith(prompt):
+                    generated_text = generated_text[len(prompt):]
+                
+                if len(generated_text) > 200:
+                    return generated_text
+                else:
+                    return generate_template_posts(topic, industry, tone, audience, post_type)
+            else:
+                return generate_template_posts(topic, industry, tone, audience, post_type)
+        else:
+            return generate_template_posts(topic, industry, tone, audience, post_type)
+            
+    except Exception as e:
+        return generate_template_posts(topic, industry, tone, audience, post_type)
+
+def generate_template_posts(topic, industry, tone, audience, post_type):
+    """Generate varied posts using templates with randomization"""
     
     # Different hooks based on tone
-    if tone == "Professional":
-        hook = f"📊 Industry insight: {topic} is reshaping {industry}"
-    elif tone == "Conversational":
-        hook = f"💬 Let's talk about {topic} in {industry}"
-    elif tone == "Inspirational":
-        hook = f"🚀 The future of {topic} in {industry} starts with YOU"
-    elif tone == "Educational":
-        hook = f"📚 {topic} 101 for {industry} professionals"
-    elif tone == "Humorous":
-        hook = f"😅 {topic} in {industry}: It's complicated"
-    elif tone == "Thought-provoking":
-        hook = f"🤯 Unpopular opinion: {topic} will change {industry} forever"
-    else:  # Personal/Storytelling
-        hook = f"📖 My {topic} journey in {industry}"
+    tone_hooks = {
+        "Professional": [
+            f"📊 Industry insight: {topic} is reshaping {industry}",
+            f"🎯 Strategic perspective on {topic} in {industry}",
+            f"📈 Market analysis: The {topic} transformation in {industry}",
+            f"🔍 Deep dive: How {topic} impacts {industry} professionals"
+        ],
+        "Conversational": [
+            f"💬 Let's talk about {topic} in {industry}",
+            f"🤔 Here's what I've been thinking about {topic}",
+            f"☕ Coffee chat topic: {topic} and its impact on {industry}",
+            f"💭 Real talk about {topic} in our industry"
+        ],
+        "Inspirational": [
+            f"🚀 The future of {topic} in {industry} starts with YOU",
+            f"✨ Transform your {industry} career with {topic}",
+            f"🌟 Why {topic} is your {industry} superpower",
+            f"💫 Unlock your potential: {topic} in {industry}"
+        ],
+        "Educational": [
+            f"📚 {topic} 101 for {industry} professionals",
+            f"🎓 What every {industry} pro should know about {topic}",
+            f"📖 The complete guide to {topic} in {industry}",
+            f"🧠 Master {topic}: A {industry} perspective"
+        ],
+        "Humorous": [
+            f"😅 {topic} in {industry}: It's complicated",
+            f"🎭 Plot twist: {topic} actually makes sense in {industry}",
+            f"😂 Me trying to explain {topic} to {industry} folks",
+            f"🤪 {topic} in {industry}: Expectations vs Reality"
+        ],
+        "Thought-provoking": [
+            f"🤯 Unpopular opinion: {topic} will change {industry} forever",
+            f"🧩 The {topic} puzzle in {industry} nobody talks about",
+            f"⚡ Controversial take: {topic} isn't what you think in {industry}",
+            f"🔥 Hot take: {topic} is the {industry} game-changer"
+        ],
+        "Personal/Storytelling": [
+            f"📖 My {topic} journey in {industry}",
+            f"💡 How {topic} changed my {industry} perspective",
+            f"🛤️ The day {topic} transformed my {industry} career",
+            f"🎯 Personal story: {topic} lessons from {industry}"
+        ]
+    }
+    
+    # Get hooks for the selected tone
+    hooks = tone_hooks.get(tone, tone_hooks["Professional"])
+    selected_hook = random.choice(hooks)
     
     # Random elements
-    import random
-    
-    insights_options = ["3 key insights:", "Here's what I've learned:", "The data shows:", "My observations:"]
-    insights = random.choice(insights_options)
-    
-    action1 = random.choice(["accelerating", "advancing", "evolving"])
-    action2 = random.choice(["transforming", "reshaping", "revolutionizing"])
-    action3 = random.choice(["emerging", "developing", "expanding"])
+    insights_list = ["3 key insights:", "Here's what I've learned:", "The data shows:", "My observations:", "Industry trends reveal:"]
+    action_words_1 = ["accelerating", "advancing", "evolving", "developing"]
+    action_words_2 = ["transforming", "reshaping", "revolutionizing", "modernizing"]
+    action_words_3 = ["emerging", "expanding", "growing", "scaling"]
     
     cta_options = [
         f"What's your experience with {topic}? Share below! 👇",
         f"How is {topic} impacting your {industry} work?",
         f"What {topic} trends are you seeing in {industry}?",
-        f"Thoughts on {topic} in our industry? Let's discuss! 💬"
+        f"Thoughts on {topic} in our industry? Let's discuss! 💬",
+        f"How are you leveraging {topic} in {industry}?",
+        f"What's your {topic} success story? Drop it in comments!"
     ]
+    
+    emoji_sets = [
+        ["🚀", "⭐", "💫", "✨"],
+        ["🎯", "📊", "📈", "🔥"],
+        ["💡", "🧠", "🔍", "💭"],
+        ["⚡", "🌟", "🎉", "🏆"]
+    ]
+    
+    # Select random elements
+    insights = random.choice(insights_list)
+    action1 = random.choice(action_words_1)
+    action2 = random.choice(action_words_2)
+    action3 = random.choice(action_words_3)
     cta = random.choice(cta_options)
+    emojis = random.choice(emoji_sets)
     
-    emoji_set = random.choice([
-        ["🚀", "⭐", "💫"],
-        ["🎯", "📊", "📈"],
-        ["💡", "🧠", "🔍"],
-        ["⚡", "🌟", "🎉"]
-    ])
-    
-    # Generate 5 different post types
+    # Generate 5 different posts
     posts = []
     
     # Post 1: Insights format
-    post1 = f"""{hook}
+    post1 = f"""{selected_hook}
 
 As someone working with {audience}, I've been diving deep into how {topic} is {action1} across {industry}.
 
 {insights}
-{emoji_set[0]} Market demand is {action2}
-{emoji_set[1]} Skills requirements are {action3}
-{emoji_set[2]} Innovation cycles are accelerating
+{emojis[0]} Market demand is {action2}
+{emojis[1]} Skills requirements are {action3}
+{emojis[2]} Innovation cycles are accelerating
+{emojis[3]} Competitive advantages are emerging
 
 {cta}
 
 #{industry.replace(' ', '')} #{topic.replace(' ', '')} #Innovation #Growth #Leadership"""
     
     # Post 2: Story format
-    story_starts = [
+    story_options = [
         f"Last week, I witnessed something remarkable in {industry}",
         f"Three months ago, I couldn't have predicted this {industry} shift",
-        f"Yesterday's conversation about {topic} changed my perspective"
+        f"Yesterday's conversation about {topic} changed my perspective",
+        f"I just had the most interesting discussion with {audience} about {topic}"
     ]
-    story_start = random.choice(story_starts)
+    story_start = random.choice(story_options)
     
-    impact = random.choice([
+    impact_options = [
         "productivity increased by 40%",
-        "collaboration improved dramatically", 
-        "results exceeded all expectations"
-    ])
+        "collaboration improved dramatically",
+        "results exceeded all expectations",
+        "ROI was better than anticipated",
+        "team efficiency skyrocketed"
+    ]
+    impact = random.choice(impact_options)
     
     post2 = f"""{story_start}.
 
@@ -126,6 +226,7 @@ The impact of {topic} was undeniable:
 • {impact}
 • Decision-making became more data-driven
 • Innovation cycles shortened significantly
+• Team collaboration reached new levels
 
 For {audience} in {industry}, this isn't just a trend—it's the new reality.
 
@@ -135,62 +236,67 @@ How is {topic} changing your daily workflow?
     
     # Post 3: Poll format
     poll_questions = [
-        f"Quick poll for {audience}: What's your biggest {topic} challenge?",
+        f"Quick poll for {audience}: What's your biggest {topic} challenge in {industry}?",
         f"Honest question: Is {topic} overhyped or underutilized in {industry}?",
-        f"Help me settle a debate: What's the #1 {topic} benefit?"
+        f"Help me settle a debate: What's the #1 {topic} benefit for {industry}?",
+        f"Survey time: How ready is {industry} for widespread {topic} adoption?"
     ]
     poll_q = random.choice(poll_questions)
     
     post3 = f"""{poll_q}
 
 A) Implementation complexity
-B) Cost concerns
-C) Skill gaps  
+B) Cost and budget concerns
+C) Skills and training gaps
 D) Resistance to change
 
 Working with {audience}, I see huge variation in {topic} readiness across {industry}.
 
-Some organizations are crushing it, others are struggling to get started.
+Some organizations are absolutely crushing it, while others are still struggling to get started.
 
-Drop your vote in comments + share what's working for you! 📊
+Drop your vote in comments + share what's working (or not working) for you! 📊
 
 #{industry.replace(' ', '')} #{topic.replace(' ', '')} #Poll #Community #Insights"""
     
-    # Post 4: Hot take format
-    hot_takes = [
+    # Post 4: Contrarian/Hot take format
+    contrarian_options = [
         f"Unpopular opinion: Most {industry} companies are doing {topic} wrong",
         f"Hot take: {topic} isn't the problem in {industry}—implementation is",
+        f"Controversial statement: {topic} alone won't save struggling {industry} businesses",
         f"Bold prediction: {topic} will be standard in {industry} within 18 months"
     ]
-    hot_take = random.choice(hot_takes)
+    contrarian = random.choice(contrarian_options)
     
-    post4 = f"""{hot_take}.
+    post4 = f"""{contrarian}.
 
 Here's why I believe this:
 
 → Technology adoption varies widely across organizations
 → Implementation strategy often lacks proper planning
 → Change management is frequently an afterthought
+→ Leadership buy-in tends to be superficial
 
-For {audience}, the window of opportunity is narrowing.
+For {audience}, the window of opportunity is narrowing fast.
 
-Am I wrong? Prove me wrong in the comments! 🔥
+Am I completely wrong here? Prove me wrong in the comments! 🔥
 
 #{industry.replace(' ', '')} #{topic.replace(' ', '')} #Controversial #RealTalk #ChangeManagement"""
     
-    # Post 5: Data format
+    # Post 5: Data/Research format
     data_hooks = [
-        f"The latest {industry} research on {topic} is eye-opening",
-        f"New data reveals surprising {topic} trends in {industry}",
-        f"Industry report: {topic} adoption in {industry} accelerating"
+        f"The latest {industry} research on {topic} is absolutely eye-opening",
+        f"New data reveals some surprising {topic} trends in {industry}",
+        f"Just analyzed 6 months of {topic} data from across {industry}",
+        f"Industry report: {topic} adoption in {industry} is accelerating"
     ]
     data_hook = random.choice(data_hooks)
     
-    metrics = [
-        "73% increase in adoption",
-        "2.3x improvement in efficiency", 
-        "41% reduction in costs"
+    metrics_sets = [
+        ["73% increase in adoption rates", "2.3x improvement in efficiency", "41% reduction in operational costs"],
+        ["89% of leaders now see clear value", "156% ROI within first 12 months", "64% faster project completion"],
+        ["92% user satisfaction rating", "78% of teams want expanded training", "85% would recommend to others"]
     ]
+    metrics = random.choice(metrics_sets)
     
     post5 = f"""{data_hook}.
 
@@ -200,7 +306,7 @@ Key findings for {audience}:
 📈 {metrics[1]}
 🎯 {metrics[2]}
 
-If you're in {industry} and not tracking these metrics, you're flying blind.
+If you're in {industry} and not tracking these metrics, you're essentially flying blind.
 
 What data points matter most in your {topic} journey?
 
@@ -237,7 +343,7 @@ def parse_posts(content):
         if current_post:
             posts.append(current_post.strip())
         
-        return posts if posts else [content]  # Return content as single post if parsing fails
+        return posts if posts else [content]
 
 # Main App Interface
 def main():
@@ -285,15 +391,22 @@ def main():
         
         # Generate button
         generate_button = st.button("🎯 Generate Posts", type="primary")
+        
+        # Upgrade section
+        st.markdown("---")
+        st.markdown("### 🚀 Love this tool?")
+        st.markdown("**Upgrade to Pro:**")
+        st.markdown("• 20+ industry templates")
+        st.markdown("• Advanced customization")
+        st.markdown("• Priority support")
+        st.markdown("**$29/month**")
+        if st.button("Upgrade Now"):
+            st.success("Contact us for Pro access!")
     
     # Main content area
     if generate_button:
         if not topic:
             st.warning("Please enter a topic to generate posts about.")
-            return
-            
-        if not os.getenv("HUGGINGFACE_API_KEY"):
-            st.error("Hugging Face API key not found. Please check your configuration.")
             return
         
         # Show loading spinner
@@ -343,10 +456,33 @@ def main():
         with col3:
             st.markdown("### 📈 Boost Engagement")
             st.markdown("AI-optimized content designed for maximum LinkedIn engagement")
+        
+        # Features showcase
+        st.markdown("---")
+        st.markdown("## 💡 What You Get")
+        
+        feature_col1, feature_col2 = st.columns(2)
+        
+        with feature_col1:
+            st.markdown("**✅ Professional Quality Posts**")
+            st.markdown("Each post is crafted for maximum engagement")
+            st.markdown("**✅ Industry-Specific Content**") 
+            st.markdown("Tailored for your exact industry and audience")
+            st.markdown("**✅ Multiple Formats**")
+            st.markdown("Stories, polls, insights, data-driven posts")
+        
+        with feature_col2:
+            st.markdown("**✅ Smart Hashtag Integration**")
+            st.markdown("Relevant hashtags automatically included")
+            st.markdown("**✅ Engagement Optimized**")
+            st.markdown("Clear CTAs and conversation starters")
+            st.markdown("**✅ Ready to Post**")
+            st.markdown("Copy-paste directly to LinkedIn")
 
     # Footer
     st.markdown("---")
     st.markdown("**Ready to dominate LinkedIn? Generate your posts above! 🚀**")
+    st.markdown("*Built with ❤️ for LinkedIn professionals*")
 
 if __name__ == "__main__":
     main()
