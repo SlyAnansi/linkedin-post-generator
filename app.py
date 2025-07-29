@@ -4,6 +4,8 @@ import json
 import os
 import random
 from dotenv import load_dotenv
+import csv
+from datetime import datetime
 
 # Load environment variables
 load_dotenv()
@@ -372,7 +374,57 @@ What data points matter most in your {topic} journey?
     
     return "\n\n" + "="*50 + "\n\n".join([f"POST {i+1}:\n{post}" for i, post in enumerate(posts)])
 
-def parse_posts(content):
+def save_email_to_file(email, name="", company=""):
+    """Save email to a local file (for development) or database"""
+    try:
+        # Create a simple record
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        record = {
+            "timestamp": timestamp,
+            "email": email,
+            "name": name,
+            "company": company,
+            "source": "linkedin_post_generator"
+        }
+        
+        # In a real app, you'd save to a database
+        # For now, we'll just acknowledge the signup
+        return True
+    except Exception as e:
+        return False
+
+def show_email_signup():
+    """Show email signup form"""
+    with st.container():
+        st.markdown("### 📧 Get Free Access + Updates")
+        st.markdown("*Enter your email to unlock unlimited post generation and get notified about new features*")
+        
+        with st.form("email_signup"):
+            col1, col2 = st.columns(2)
+            with col1:
+                name = st.text_input("Name (optional)")
+            with col2:
+                company = st.text_input("Company (optional)")
+            
+            email = st.text_input("Email Address*", placeholder="your.email@company.com")
+            
+            submitted = st.form_submit_button("🚀 Get Free Access", type="primary")
+            
+            if submitted:
+                if email and "@" in email:
+                    if save_email_to_file(email, name, company):
+                        st.session_state.email_collected = True
+                        st.session_state.user_email = email
+                        st.success("✅ Welcome! You now have unlimited access!")
+                        st.rerun()
+                    else:
+                        st.error("Error saving email. Please try again.")
+                else:
+                    st.error("Please enter a valid email address.")
+
+def check_email_access():
+    """Check if user has provided email"""
+    return st.session_state.get('email_collected', False)
     """Parse the generated content into individual posts"""
     if "=" in content and "POST" in content:
         # Handle the template format
@@ -403,12 +455,67 @@ def parse_posts(content):
 
 # Main App Interface
 def main():
+    # Initialize session state
+    if 'email_collected' not in st.session_state:
+        st.session_state.email_collected = False
+    
     # Header
     st.markdown('<div class="main-header">🚀 LinkedIn Post Generator</div>', unsafe_allow_html=True)
     st.markdown('<div class="sub-header">Create engaging LinkedIn content in seconds</div>', unsafe_allow_html=True)
     
+    # Check if user has provided email
+    if not check_email_access():
+        # Show preview and email signup
+        st.markdown("## 👀 See What You'll Get")
+        
+        # Show example post
+        st.markdown("### Example Generated Post:")
+        example_post = """🚀 The future of AI in Technology starts with YOU
+
+As someone working with developers, I've been diving deep into how AI is accelerating across Technology.
+
+Here's what I've learned:
+⭐ Digital transformation is reshaping market dynamics
+💫 API integration requirements are evolving
+✨ Deployment frequency optimization is accelerating
+🚀 Competitive advantages around technical debt are emerging
+
+What's your experience with AI? Share below! 👇
+
+#Technology #AI #Innovation #Growth #Leadership"""
+        
+        st.markdown(f'<div class="post-container">{example_post}</div>', unsafe_allow_html=True)
+        
+        st.markdown("---")
+        
+        # Email signup form
+        show_email_signup()
+        
+        # Benefits below signup
+        st.markdown("### 🎯 What You Get With Free Access:")
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.markdown("**✅ Unlimited Posts**")
+            st.markdown("Generate as many posts as you need")
+        
+        with col2:
+            st.markdown("**✅ Industry Jargon**") 
+            st.markdown("Automatically adapts to your industry")
+        
+        with col3:
+            st.markdown("**✅ Multiple Tones**")
+            st.markdown("Professional, casual, thought-provoking & more")
+        
+        return
+    
+    # Rest of the app for users who provided email
     # Sidebar for inputs
     with st.sidebar:
+        # Show user info
+        if st.session_state.get('user_email'):
+            st.success(f"✅ Logged in: {st.session_state.user_email}")
+        
         st.header("📝 Post Configuration")
         
         # Main topic
@@ -452,9 +559,10 @@ def main():
         st.markdown("---")
         st.markdown("### 🚀 Love this tool?")
         st.markdown("**Upgrade to Pro:**")
-        st.markdown("• 20+ industry templates")
+        st.markdown("• 50+ industry templates")
         st.markdown("• Advanced customization")
         st.markdown("• Priority support")
+        st.markdown("• Export to multiple formats")
         st.markdown("**$29/month**")
         if st.button("Upgrade Now"):
             st.success("Contact us for Pro access!")
@@ -498,7 +606,7 @@ def main():
                 st.error("Could not parse the generated posts. Please try again.")
     
     else:
-        # Landing page content
+        # Show features for logged-in users
         col1, col2, col3 = st.columns(3)
         
         with col1:
@@ -512,28 +620,6 @@ def main():
         with col3:
             st.markdown("### 📈 Boost Engagement")
             st.markdown("AI-optimized content designed for maximum LinkedIn engagement")
-        
-        # Features showcase
-        st.markdown("---")
-        st.markdown("## 💡 What You Get")
-        
-        feature_col1, feature_col2 = st.columns(2)
-        
-        with feature_col1:
-            st.markdown("**✅ Professional Quality Posts**")
-            st.markdown("Each post is crafted for maximum engagement")
-            st.markdown("**✅ Industry-Specific Content**") 
-            st.markdown("Tailored for your exact industry and audience")
-            st.markdown("**✅ Multiple Formats**")
-            st.markdown("Stories, polls, insights, data-driven posts")
-        
-        with feature_col2:
-            st.markdown("**✅ Smart Hashtag Integration**")
-            st.markdown("Relevant hashtags automatically included")
-            st.markdown("**✅ Engagement Optimized**")
-            st.markdown("Clear CTAs and conversation starters")
-            st.markdown("**✅ Ready to Post**")
-            st.markdown("Copy-paste directly to LinkedIn")
 
     # Footer
     st.markdown("---")
