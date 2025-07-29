@@ -101,8 +101,65 @@ POST 1:"""
     except Exception as e:
         return generate_template_posts(topic, industry, tone, audience, post_type)
 
+def get_industry_specifics(industry, topic):
+    """Get industry-specific jargon, pain points, and terminology"""
+    
+    industry_data = {
+        "Technology": {
+            "jargon": ["MVP", "sprint", "scalability", "API integration", "tech stack", "DevOps", "CI/CD"],
+            "pain_points": ["technical debt", "scaling challenges", "security vulnerabilities", "legacy systems"],
+            "metrics": ["uptime", "response time", "user adoption", "churn rate", "deployment frequency"],
+            "roles": ["developers", "product managers", "engineering teams", "DevOps engineers"],
+            "buzzwords": ["digital transformation", "cloud-native", "microservices", "containerization"]
+        },
+        "Healthcare": {
+            "jargon": ["EHR systems", "HIPAA compliance", "patient outcomes", "care coordination", "clinical workflows"],
+            "pain_points": ["regulatory compliance", "patient safety", "documentation burden", "interoperability"],
+            "metrics": ["patient satisfaction scores", "readmission rates", "clinical quality measures", "care efficiency"],
+            "roles": ["clinicians", "healthcare administrators", "care teams", "medical professionals"],
+            "buzzwords": ["value-based care", "population health", "telehealth adoption", "clinical excellence"]
+        },
+        "Finance": {
+            "jargon": ["portfolio optimization", "risk management", "compliance frameworks", "liquidity management"],
+            "pain_points": ["regulatory changes", "market volatility", "operational risk", "compliance costs"],
+            "metrics": ["alpha generation", "Sharpe ratio", "AUM growth", "client retention"],
+            "roles": ["financial advisors", "portfolio managers", "risk analysts", "compliance officers"],
+            "buzzwords": ["fintech disruption", "robo-advisory", "ESG investing", "regulatory technology"]
+        },
+        "Marketing": {
+            "jargon": ["attribution modeling", "funnel optimization", "customer journey mapping", "conversion tracking"],
+            "pain_points": ["ad spend efficiency", "attribution gaps", "customer acquisition costs", "brand measurement"],
+            "metrics": ["ROAS", "LTV:CAC ratio", "engagement rates", "conversion optimization"],
+            "roles": ["performance marketers", "growth teams", "brand managers", "marketing analysts"],
+            "buzzwords": ["omnichannel strategy", "personalization at scale", "marketing automation", "customer experience"]
+        },
+        "Sales": {
+            "jargon": ["pipeline velocity", "quota attainment", "deal progression", "sales enablement"],
+            "pain_points": ["lead quality", "sales cycle length", "quota pressure", "territory coverage"],
+            "metrics": ["win rates", "average deal size", "sales velocity", "pipeline coverage ratios"],
+            "roles": ["sales development reps", "account executives", "sales managers", "revenue operations"],
+            "buzzwords": ["revenue intelligence", "predictive analytics", "social selling", "sales acceleration"]
+        }
+    }
+    
+    return industry_data.get(industry, {
+        "jargon": ["best practices", "operational efficiency", "strategic initiatives"],
+        "pain_points": ["market challenges", "operational inefficiencies", "competitive pressure"],
+        "metrics": ["performance indicators", "success metrics", "ROI measurements"],
+        "roles": ["professionals", "managers", "team leaders"],
+        "buzzwords": ["digital innovation", "operational excellence", "strategic transformation"]
+    })
+
 def generate_template_posts(topic, industry, tone, audience, post_type):
     """Generate varied posts using templates with randomization"""
+    
+    # Get industry-specific terminology
+    industry_data = get_industry_specifics(industry, topic)
+    industry_jargon = random.choice(industry_data["jargon"])
+    industry_pain = random.choice(industry_data["pain_points"])
+    industry_metric = random.choice(industry_data["metrics"])
+    industry_role = random.choice(industry_data["roles"])
+    industry_buzzword = random.choice(industry_data["buzzwords"])
     
     # Different hooks based on tone
     tone_hooks = {
@@ -187,50 +244,49 @@ def generate_template_posts(topic, industry, tone, audience, post_type):
     # Generate 5 different posts
     posts = []
     
-    # Post 1: Insights format
+    # Post 1: Insights format with industry jargon
     post1 = f"""{selected_hook}
 
-As someone working with {audience}, I've been diving deep into how {topic} is {action1} across {industry}.
+As someone working with {industry_role}, I've been diving deep into how {topic} is {action1} across {industry}.
 
 {insights}
-{emojis[0]} Market demand is {action2}
-{emojis[1]} Skills requirements are {action3}
-{emojis[2]} Innovation cycles are accelerating
-{emojis[3]} Competitive advantages are emerging
+{emojis[0]} {industry_buzzword} is {action2} market dynamics
+{emojis[1]} {industry_jargon} requirements are {action3}
+{emojis[2]} {industry_metric} optimization is accelerating
+{emojis[3]} Competitive advantages around {industry_pain} are emerging
 
 {cta}
 
 #{industry.replace(' ', '')} #{topic.replace(' ', '')} #Innovation #Growth #Leadership"""
     
-    # Post 2: Story format
+    # Post 2: Story format with industry specifics
     story_options = [
-        f"Last week, I witnessed something remarkable in {industry}",
-        f"Three months ago, I couldn't have predicted this {industry} shift",
-        f"Yesterday's conversation about {topic} changed my perspective",
-        f"I just had the most interesting discussion with {audience} about {topic}"
+        f"Last week, I witnessed a breakthrough in {industry_jargon} implementation",
+        f"Three months ago, our {industry_role} couldn't have predicted this {industry} shift",
+        f"Yesterday's conversation about {industry_pain} and {topic} changed my perspective",
+        f"I just had the most interesting discussion with {industry_role} about {industry_buzzword}"
     ]
     story_start = random.choice(story_options)
     
     impact_options = [
-        "productivity increased by 40%",
-        "collaboration improved dramatically",
-        "results exceeded all expectations",
-        "ROI was better than anticipated",
-        "team efficiency skyrocketed"
+        f"{industry_metric} improved by 40%",
+        f"{industry_jargon} collaboration improved dramatically",
+        f"{industry_pain} resolution exceeded all expectations",
+        f"ROI on {industry_buzzword} was better than anticipated"
     ]
     impact = random.choice(impact_options)
     
     post2 = f"""{story_start}.
 
-The impact of {topic} was undeniable:
+The impact of {topic} on our {industry_buzzword} was undeniable:
 • {impact}
-• Decision-making became more data-driven
-• Innovation cycles shortened significantly
-• Team collaboration reached new levels
+• {industry_jargon} decision-making became more data-driven
+• {industry_metric} cycles shortened significantly
+• {industry_role} collaboration reached new levels
 
-For {audience} in {industry}, this isn't just a trend—it's the new reality.
+For {audience} in {industry}, this isn't just a trend—it's the new reality of {industry_pain} management.
 
-How is {topic} changing your daily workflow?
+How is {topic} changing your {industry_jargon} workflow?
 
 #{industry.replace(' ', '')} #{topic.replace(' ', '')} #Transformation #Success #RealResults"""
     
