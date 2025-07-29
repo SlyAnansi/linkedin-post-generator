@@ -4,7 +4,6 @@ import json
 import os
 import random
 from dotenv import load_dotenv
-import csv
 from datetime import datetime
 
 # Load environment variables
@@ -47,348 +46,11 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-def generate_linkedin_posts(topic, industry, tone, audience, post_type):
-    """Generate LinkedIn posts using Hugging Face API with fallback"""
-    
-    prompt = f"""Create 5 engaging LinkedIn posts about "{topic}" for the {industry} industry.
-
-Target audience: {audience}
-Tone: {tone}
-Post type: {post_type}
-
-Requirements for each post:
-- 150-300 words
-- Include 3-5 relevant hashtags
-- Include a call-to-action
-- Use emojis appropriately
-- Format clearly as POST 1:, POST 2:, etc.
-
-POST 1:"""
-    
-    try:
-        API_URL = "https://api-inference.huggingface.co/models/microsoft/DialoGPT-medium"
-        headers = {"Authorization": f"Bearer {os.getenv('HUGGINGFACE_API_KEY')}"}
-        
-        payload = {
-            "inputs": prompt,
-            "parameters": {
-                "max_new_tokens": 1500,
-                "temperature": 0.7,
-                "top_p": 0.9,
-                "do_sample": True
-            },
-            "options": {
-                "wait_for_model": True
-            }
-        }
-        
-        response = requests.post(API_URL, headers=headers, json=payload)
-        
-        if response.status_code == 200:
-            result = response.json()
-            if isinstance(result, list) and len(result) > 0:
-                generated_text = result[0].get('generated_text', '')
-                if generated_text.startswith(prompt):
-                    generated_text = generated_text[len(prompt):]
-                
-                if len(generated_text) > 200:
-                    return generated_text
-                else:
-                    return generate_template_posts(topic, industry, tone, audience, post_type)
-            else:
-                return generate_template_posts(topic, industry, tone, audience, post_type)
-        else:
-            return generate_template_posts(topic, industry, tone, audience, post_type)
-            
-    except Exception as e:
-        return generate_template_posts(topic, industry, tone, audience, post_type)
-
-def get_industry_specifics(industry, topic):
-    """Get industry-specific jargon, pain points, and terminology"""
-    
-    industry_data = {
-        "Technology": {
-            "jargon": ["MVP", "sprint", "scalability", "API integration", "tech stack", "DevOps", "CI/CD"],
-            "pain_points": ["technical debt", "scaling challenges", "security vulnerabilities", "legacy systems"],
-            "metrics": ["uptime", "response time", "user adoption", "churn rate", "deployment frequency"],
-            "roles": ["developers", "product managers", "engineering teams", "DevOps engineers"],
-            "buzzwords": ["digital transformation", "cloud-native", "microservices", "containerization"]
-        },
-        "Healthcare": {
-            "jargon": ["EHR systems", "HIPAA compliance", "patient outcomes", "care coordination", "clinical workflows"],
-            "pain_points": ["regulatory compliance", "patient safety", "documentation burden", "interoperability"],
-            "metrics": ["patient satisfaction scores", "readmission rates", "clinical quality measures", "care efficiency"],
-            "roles": ["clinicians", "healthcare administrators", "care teams", "medical professionals"],
-            "buzzwords": ["value-based care", "population health", "telehealth adoption", "clinical excellence"]
-        },
-        "Finance": {
-            "jargon": ["portfolio optimization", "risk management", "compliance frameworks", "liquidity management"],
-            "pain_points": ["regulatory changes", "market volatility", "operational risk", "compliance costs"],
-            "metrics": ["alpha generation", "Sharpe ratio", "AUM growth", "client retention"],
-            "roles": ["financial advisors", "portfolio managers", "risk analysts", "compliance officers"],
-            "buzzwords": ["fintech disruption", "robo-advisory", "ESG investing", "regulatory technology"]
-        },
-        "Marketing": {
-            "jargon": ["attribution modeling", "funnel optimization", "customer journey mapping", "conversion tracking"],
-            "pain_points": ["ad spend efficiency", "attribution gaps", "customer acquisition costs", "brand measurement"],
-            "metrics": ["ROAS", "LTV:CAC ratio", "engagement rates", "conversion optimization"],
-            "roles": ["performance marketers", "growth teams", "brand managers", "marketing analysts"],
-            "buzzwords": ["omnichannel strategy", "personalization at scale", "marketing automation", "customer experience"]
-        },
-        "Sales": {
-            "jargon": ["pipeline velocity", "quota attainment", "deal progression", "sales enablement"],
-            "pain_points": ["lead quality", "sales cycle length", "quota pressure", "territory coverage"],
-            "metrics": ["win rates", "average deal size", "sales velocity", "pipeline coverage ratios"],
-            "roles": ["sales development reps", "account executives", "sales managers", "revenue operations"],
-            "buzzwords": ["revenue intelligence", "predictive analytics", "social selling", "sales acceleration"]
-        }
-    }
-    
-    return industry_data.get(industry, {
-        "jargon": ["best practices", "operational efficiency", "strategic initiatives"],
-        "pain_points": ["market challenges", "operational inefficiencies", "competitive pressure"],
-        "metrics": ["performance indicators", "success metrics", "ROI measurements"],
-        "roles": ["professionals", "managers", "team leaders"],
-        "buzzwords": ["digital innovation", "operational excellence", "strategic transformation"]
-    })
-
-def generate_template_posts(topic, industry, tone, audience, post_type):
-    """Generate varied posts using templates with randomization"""
-    
-    # Get industry-specific terminology
-    industry_data = get_industry_specifics(industry, topic)
-    industry_jargon = random.choice(industry_data["jargon"])
-    industry_pain = random.choice(industry_data["pain_points"])
-    industry_metric = random.choice(industry_data["metrics"])
-    industry_role = random.choice(industry_data["roles"])
-    industry_buzzword = random.choice(industry_data["buzzwords"])
-    
-    # Different hooks based on tone
-    tone_hooks = {
-        "Professional": [
-            f"📊 Industry insight: {topic} is reshaping {industry}",
-            f"🎯 Strategic perspective on {topic} in {industry}",
-            f"📈 Market analysis: The {topic} transformation in {industry}",
-            f"🔍 Deep dive: How {topic} impacts {industry} professionals"
-        ],
-        "Conversational": [
-            f"💬 Let's talk about {topic} in {industry}",
-            f"🤔 Here's what I've been thinking about {topic}",
-            f"☕ Coffee chat topic: {topic} and its impact on {industry}",
-            f"💭 Real talk about {topic} in our industry"
-        ],
-        "Inspirational": [
-            f"🚀 The future of {topic} in {industry} starts with YOU",
-            f"✨ Transform your {industry} career with {topic}",
-            f"🌟 Why {topic} is your {industry} superpower",
-            f"💫 Unlock your potential: {topic} in {industry}"
-        ],
-        "Educational": [
-            f"📚 {topic} 101 for {industry} professionals",
-            f"🎓 What every {industry} pro should know about {topic}",
-            f"📖 The complete guide to {topic} in {industry}",
-            f"🧠 Master {topic}: A {industry} perspective"
-        ],
-        "Humorous": [
-            f"😅 {topic} in {industry}: It's complicated",
-            f"🎭 Plot twist: {topic} actually makes sense in {industry}",
-            f"😂 Me trying to explain {topic} to {industry} folks",
-            f"🤪 {topic} in {industry}: Expectations vs Reality"
-        ],
-        "Thought-provoking": [
-            f"🤯 Unpopular opinion: {topic} will change {industry} forever",
-            f"🧩 The {topic} puzzle in {industry} nobody talks about",
-            f"⚡ Controversial take: {topic} isn't what you think in {industry}",
-            f"🔥 Hot take: {topic} is the {industry} game-changer"
-        ],
-        "Personal/Storytelling": [
-            f"📖 My {topic} journey in {industry}",
-            f"💡 How {topic} changed my {industry} perspective",
-            f"🛤️ The day {topic} transformed my {industry} career",
-            f"🎯 Personal story: {topic} lessons from {industry}"
-        ]
-    }
-    
-    # Get hooks for the selected tone
-    hooks = tone_hooks.get(tone, tone_hooks["Professional"])
-    selected_hook = random.choice(hooks)
-    
-    # Random elements
-    insights_list = ["3 key insights:", "Here's what I've learned:", "The data shows:", "My observations:", "Industry trends reveal:"]
-    action_words_1 = ["accelerating", "advancing", "evolving", "developing"]
-    action_words_2 = ["transforming", "reshaping", "revolutionizing", "modernizing"]
-    action_words_3 = ["emerging", "expanding", "growing", "scaling"]
-    
-    cta_options = [
-        f"What's your experience with {topic}? Share below! 👇",
-        f"How is {topic} impacting your {industry} work?",
-        f"What {topic} trends are you seeing in {industry}?",
-        f"Thoughts on {topic} in our industry? Let's discuss! 💬",
-        f"How are you leveraging {topic} in {industry}?",
-        f"What's your {topic} success story? Drop it in comments!"
-    ]
-    
-    emoji_sets = [
-        ["🚀", "⭐", "💫", "✨"],
-        ["🎯", "📊", "📈", "🔥"],
-        ["💡", "🧠", "🔍", "💭"],
-        ["⚡", "🌟", "🎉", "🏆"]
-    ]
-    
-    # Select random elements
-    insights = random.choice(insights_list)
-    action1 = random.choice(action_words_1)
-    action2 = random.choice(action_words_2)
-    action3 = random.choice(action_words_3)
-    cta = random.choice(cta_options)
-    emojis = random.choice(emoji_sets)
-    
-    # Generate 5 different posts
-    posts = []
-    
-    # Post 1: Insights format with industry jargon
-    post1 = f"""{selected_hook}
-
-As someone working with {industry_role}, I've been diving deep into how {topic} is {action1} across {industry}.
-
-{insights}
-{emojis[0]} {industry_buzzword} is {action2} market dynamics
-{emojis[1]} {industry_jargon} requirements are {action3}
-{emojis[2]} {industry_metric} optimization is accelerating
-{emojis[3]} Competitive advantages around {industry_pain} are emerging
-
-{cta}
-
-#{industry.replace(' ', '')} #{topic.replace(' ', '')} #Innovation #Growth #Leadership"""
-    
-    # Post 2: Story format with industry specifics
-    story_options = [
-        f"Last week, I witnessed a breakthrough in {industry_jargon} implementation",
-        f"Three months ago, our {industry_role} couldn't have predicted this {industry} shift",
-        f"Yesterday's conversation about {industry_pain} and {topic} changed my perspective",
-        f"I just had the most interesting discussion with {industry_role} about {industry_buzzword}"
-    ]
-    story_start = random.choice(story_options)
-    
-    impact_options = [
-        f"{industry_metric} improved by 40%",
-        f"{industry_jargon} collaboration improved dramatically",
-        f"{industry_pain} resolution exceeded all expectations",
-        f"ROI on {industry_buzzword} was better than anticipated"
-    ]
-    impact = random.choice(impact_options)
-    
-    post2 = f"""{story_start}.
-
-The impact of {topic} on our {industry_buzzword} was undeniable:
-• {impact}
-• {industry_jargon} decision-making became more data-driven
-• {industry_metric} cycles shortened significantly
-• {industry_role} collaboration reached new levels
-
-For {audience} in {industry}, this isn't just a trend—it's the new reality of {industry_pain} management.
-
-How is {topic} changing your {industry_jargon} workflow?
-
-#{industry.replace(' ', '')} #{topic.replace(' ', '')} #Transformation #Success #RealResults"""
-    
-    # Post 3: Poll format
-    poll_questions = [
-        f"Quick poll for {audience}: What's your biggest {topic} challenge in {industry}?",
-        f"Honest question: Is {topic} overhyped or underutilized in {industry}?",
-        f"Help me settle a debate: What's the #1 {topic} benefit for {industry}?",
-        f"Survey time: How ready is {industry} for widespread {topic} adoption?"
-    ]
-    poll_q = random.choice(poll_questions)
-    
-    post3 = f"""{poll_q}
-
-A) Implementation complexity
-B) Cost and budget concerns
-C) Skills and training gaps
-D) Resistance to change
-
-Working with {audience}, I see huge variation in {topic} readiness across {industry}.
-
-Some organizations are absolutely crushing it, while others are still struggling to get started.
-
-Drop your vote in comments + share what's working (or not working) for you! 📊
-
-#{industry.replace(' ', '')} #{topic.replace(' ', '')} #Poll #Community #Insights"""
-    
-    # Post 4: Contrarian/Hot take format
-    contrarian_options = [
-        f"Unpopular opinion: Most {industry} companies are doing {topic} wrong",
-        f"Hot take: {topic} isn't the problem in {industry}—implementation is",
-        f"Controversial statement: {topic} alone won't save struggling {industry} businesses",
-        f"Bold prediction: {topic} will be standard in {industry} within 18 months"
-    ]
-    contrarian = random.choice(contrarian_options)
-    
-    post4 = f"""{contrarian}.
-
-Here's why I believe this:
-
-→ Technology adoption varies widely across organizations
-→ Implementation strategy often lacks proper planning
-→ Change management is frequently an afterthought
-→ Leadership buy-in tends to be superficial
-
-For {audience}, the window of opportunity is narrowing fast.
-
-Am I completely wrong here? Prove me wrong in the comments! 🔥
-
-#{industry.replace(' ', '')} #{topic.replace(' ', '')} #Controversial #RealTalk #ChangeManagement"""
-    
-    # Post 5: Data/Research format
-    data_hooks = [
-        f"The latest {industry} research on {topic} is absolutely eye-opening",
-        f"New data reveals some surprising {topic} trends in {industry}",
-        f"Just analyzed 6 months of {topic} data from across {industry}",
-        f"Industry report: {topic} adoption in {industry} is accelerating"
-    ]
-    data_hook = random.choice(data_hooks)
-    
-    metrics_sets = [
-        ["73% increase in adoption rates", "2.3x improvement in efficiency", "41% reduction in operational costs"],
-        ["89% of leaders now see clear value", "156% ROI within first 12 months", "64% faster project completion"],
-        ["92% user satisfaction rating", "78% of teams want expanded training", "85% would recommend to others"]
-    ]
-    metrics = random.choice(metrics_sets)
-    
-    post5 = f"""{data_hook}.
-
-Key findings for {audience}:
-
-📊 {metrics[0]}
-📈 {metrics[1]}
-🎯 {metrics[2]}
-
-If you're in {industry} and not tracking these metrics, you're essentially flying blind.
-
-What data points matter most in your {topic} journey?
-
-#{industry.replace(' ', '')} #{topic.replace(' ', '')} #Data #Research #Metrics #Results"""
-    
-    posts = [post1, post2, post3, post4, post5]
-    
-    return "\n\n" + "="*50 + "\n\n".join([f"POST {i+1}:\n{post}" for i, post in enumerate(posts)])
-
 def save_email_to_file(email, name="", company=""):
-    """Save email to a local file (for development) or database"""
+    """Save email to session (in production, save to database)"""
     try:
-        # Create a simple record
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        record = {
-            "timestamp": timestamp,
-            "email": email,
-            "name": name,
-            "company": company,
-            "source": "linkedin_post_generator"
-        }
-        
-        # In a real app, you'd save to a database
-        # For now, we'll just acknowledge the signup
+        # In production, you'd save to a database here
         return True
     except Exception as e:
         return False
@@ -411,10 +73,11 @@ def show_email_signup():
             submitted = st.form_submit_button("🚀 Get Free Access", type="primary")
             
             if submitted:
-                if email and "@" in email:
+                if email and "@" in email and "." in email:
                     if save_email_to_file(email, name, company):
                         st.session_state.email_collected = True
                         st.session_state.user_email = email
+                        st.session_state.user_name = name
                         st.success("✅ Welcome! You now have unlimited access!")
                         st.rerun()
                     else:
@@ -425,33 +88,218 @@ def show_email_signup():
 def check_email_access():
     """Check if user has provided email"""
     return st.session_state.get('email_collected', False)
-    """Parse the generated content into individual posts"""
-    if "=" in content and "POST" in content:
-        # Handle the template format
-        sections = content.split("="*50)
-        posts = []
-        for section in sections[1:]:  # Skip first empty section
-            if section.strip():
-                posts.append(section.strip())
-        return posts
-    else:
-        # Handle other formats
-        posts = []
-        lines = content.split('\n')
-        current_post = ""
-        
-        for line in lines:
-            if line.strip().startswith(('POST 1:', 'POST 2:', 'POST 3:', 'POST 4:', 'POST 5:')):
-                if current_post:
-                    posts.append(current_post.strip())
-                current_post = line.replace('POST ', '').replace(':', '').strip() + '\n'
-            else:
-                current_post += line + '\n'
-        
-        if current_post:
-            posts.append(current_post.strip())
-        
-        return posts if posts else [content]
+
+def get_industry_data(industry):
+    """Get industry-specific terminology"""
+    
+    industry_data = {
+        "Technology": {
+            "jargon": ["API integration", "DevOps", "scalability", "tech stack", "CI/CD pipeline"],
+            "pain_points": ["technical debt", "legacy systems", "security vulnerabilities"],
+            "metrics": ["uptime", "deployment frequency", "user adoption"],
+            "roles": ["developers", "product managers", "engineering teams"],
+            "buzzwords": ["digital transformation", "cloud-native", "microservices"]
+        },
+        "Healthcare": {
+            "jargon": ["EHR systems", "patient outcomes", "clinical workflows", "care coordination"],
+            "pain_points": ["regulatory compliance", "patient safety", "documentation burden"],
+            "metrics": ["patient satisfaction", "clinical quality measures", "care efficiency"],
+            "roles": ["clinicians", "healthcare administrators", "care teams"],
+            "buzzwords": ["value-based care", "telehealth adoption", "population health"]
+        },
+        "Finance": {
+            "jargon": ["portfolio optimization", "risk management", "compliance frameworks"],
+            "pain_points": ["market volatility", "regulatory changes", "operational risk"],
+            "metrics": ["alpha generation", "Sharpe ratio", "AUM growth"],
+            "roles": ["financial advisors", "portfolio managers", "risk analysts"],
+            "buzzwords": ["fintech disruption", "ESG investing", "robo-advisory"]
+        },
+        "Marketing": {
+            "jargon": ["attribution modeling", "funnel optimization", "conversion tracking"],
+            "pain_points": ["ad spend efficiency", "attribution gaps", "customer acquisition costs"],
+            "metrics": ["ROAS", "LTV:CAC ratio", "engagement rates"],
+            "roles": ["performance marketers", "growth teams", "brand managers"],
+            "buzzwords": ["omnichannel strategy", "personalization at scale", "marketing automation"]
+        },
+        "Sales": {
+            "jargon": ["pipeline velocity", "quota attainment", "deal progression"],
+            "pain_points": ["lead quality", "sales cycle length", "quota pressure"],
+            "metrics": ["win rates", "average deal size", "pipeline coverage"],
+            "roles": ["sales development reps", "account executives", "sales managers"],
+            "buzzwords": ["revenue intelligence", "predictive analytics", "social selling"]
+        }
+    }
+    
+    return industry_data.get(industry, {
+        "jargon": ["best practices", "operational efficiency", "strategic initiatives"],
+        "pain_points": ["market challenges", "competitive pressure", "operational inefficiencies"],
+        "metrics": ["performance indicators", "success metrics", "ROI"],
+        "roles": ["professionals", "managers", "team leaders"],
+        "buzzwords": ["innovation", "transformation", "optimization"]
+    })
+
+def generate_posts(topic, industry, tone, audience, post_type):
+    """Generate LinkedIn posts with industry-specific content"""
+    
+    # Get industry-specific data
+    industry_info = get_industry_data(industry)
+    
+    # Random selections
+    jargon = random.choice(industry_info["jargon"])
+    pain_point = random.choice(industry_info["pain_points"])
+    metric = random.choice(industry_info["metrics"])
+    role = random.choice(industry_info["roles"])
+    buzzword = random.choice(industry_info["buzzwords"])
+    
+    # Tone-based hooks
+    tone_hooks = {
+        "Professional": f"📊 Industry insight: {topic} is reshaping {industry}",
+        "Conversational": f"💬 Let's talk about {topic} in {industry}",
+        "Inspirational": f"🚀 The future of {topic} in {industry} starts with YOU",
+        "Educational": f"📚 {topic} 101 for {industry} professionals",
+        "Humorous": f"😅 {topic} in {industry}: It's complicated",
+        "Thought-provoking": f"🤯 Unpopular opinion: {topic} will change {industry} forever",
+        "Personal/Storytelling": f"📖 My {topic} journey in {industry}"
+    }
+    
+    hook = tone_hooks.get(tone, tone_hooks["Professional"])
+    
+    # Random elements
+    insights_options = ["3 key insights:", "Here's what I've learned:", "The data shows:", "My observations:"]
+    insights = random.choice(insights_options)
+    
+    action_words = ["accelerating", "transforming", "evolving", "advancing"]
+    action1 = random.choice(action_words)
+    action2 = random.choice(action_words)
+    
+    cta_options = [
+        f"What's your experience with {topic}? Share below! 👇",
+        f"How is {topic} impacting your {industry} work?",
+        f"What {topic} trends are you seeing in {industry}?",
+        f"Thoughts on {topic} in our industry? Let's discuss! 💬"
+    ]
+    cta = random.choice(cta_options)
+    
+    emojis = random.choice([["🚀", "⭐", "💫"], ["🎯", "📊", "📈"], ["💡", "🧠", "🔍"]])
+    
+    # Generate posts
+    posts = []
+    
+    # Post 1: Industry insights
+    post1 = f"""{hook}
+
+As someone working with {role}, I've been exploring how {topic} is {action1} across {industry}.
+
+{insights}
+{emojis[0]} {buzzword} is {action2} market dynamics
+{emojis[1]} {jargon} requirements are evolving
+{emojis[2]} {metric} optimization is accelerating
+
+{cta}
+
+#{industry.replace(' ', '')} #{topic.replace(' ', '')} #Innovation #Growth #Leadership"""
+    
+    # Post 2: Personal story
+    story_starts = [
+        f"Last week, I witnessed a breakthrough in {jargon} implementation",
+        f"Three months ago, our {role} couldn't have predicted this shift",
+        f"Yesterday's conversation about {pain_point} changed my perspective"
+    ]
+    story_start = random.choice(story_starts)
+    
+    post2 = f"""{story_start}.
+
+The impact of {topic} on our {buzzword} initiatives was remarkable:
+• {metric} improved by 40%
+• {jargon} processes became more efficient
+• {pain_point} resolution exceeded expectations
+
+For {audience} in {industry}, this isn't just a trend—it's the new reality.
+
+How is {topic} changing your {jargon} approach?
+
+#{industry.replace(' ', '')} #{topic.replace(' ', '')} #Transformation #Success #Results"""
+    
+    # Post 3: Poll format
+    poll_questions = [
+        f"Quick poll for {role}: What's your biggest {topic} challenge?",
+        f"Honest question: Is {topic} overhyped or underutilized in {industry}?",
+        f"Help me settle a debate: What's the #1 {topic} benefit for {industry}?"
+    ]
+    poll_q = random.choice(poll_questions)
+    
+    post3 = f"""{poll_q}
+
+A) Implementation complexity
+B) Budget constraints
+C) Skills and training gaps
+D) Resistance to change
+
+Working with {role}, I see huge variation in {topic} readiness across {industry}.
+
+Some organizations are crushing it with {jargon}, others struggle with {pain_point}.
+
+Drop your vote + share what's working for you! 📊
+
+#{industry.replace(' ', '')} #{topic.replace(' ', '')} #Poll #Community #Insights"""
+    
+    # Post 4: Hot take
+    hot_takes = [
+        f"Unpopular opinion: Most {industry} companies are doing {topic} wrong",
+        f"Hot take: {topic} isn't the problem in {industry}—implementation is",
+        f"Bold prediction: {topic} will be standard in {industry} within 18 months"
+    ]
+    hot_take = random.choice(hot_takes)
+    
+    post4 = f"""{hot_take}.
+
+Here's why I believe this:
+
+→ {buzzword} adoption varies widely
+→ {jargon} strategy often lacks planning
+→ {pain_point} management is inconsistent
+
+For {role}, the window of opportunity is narrowing.
+
+Am I wrong? Prove me wrong in the comments! 🔥
+
+#{industry.replace(' ', '')} #{topic.replace(' ', '')} #Controversial #RealTalk #ChangeManagement"""
+    
+    # Post 5: Data-driven
+    data_hooks = [
+        f"New {industry} research on {topic} is eye-opening",
+        f"Latest data reveals surprising {topic} trends in {industry}",
+        f"Industry report: {topic} adoption in {industry} is accelerating"
+    ]
+    data_hook = random.choice(data_hooks)
+    
+    metrics_data = [
+        "73% increase in adoption rates",
+        "2.3x improvement in efficiency", 
+        "41% reduction in operational costs"
+    ]
+    
+    post5 = f"""{data_hook}.
+
+Key findings for {role}:
+
+📊 {metrics_data[0]}
+📈 {metrics_data[1]}
+🎯 {metrics_data[2]}
+
+If you're in {industry} and not tracking {metric}, you're missing critical insights.
+
+What data points matter most in your {topic} journey?
+
+#{industry.replace(' ', '')} #{topic.replace(' ', '')} #Data #Research #Metrics #Results"""
+    
+    posts = [post1, post2, post3, post4, post5]
+    
+    return posts
+
+def parse_posts_from_list(posts):
+    """Convert list of posts to display format"""
+    return posts
 
 # Main App Interface
 def main():
@@ -472,13 +320,12 @@ def main():
         st.markdown("### Example Generated Post:")
         example_post = """🚀 The future of AI in Technology starts with YOU
 
-As someone working with developers, I've been diving deep into how AI is accelerating across Technology.
+As someone working with developers, I've been exploring how AI is accelerating across Technology.
 
 Here's what I've learned:
 ⭐ Digital transformation is reshaping market dynamics
 💫 API integration requirements are evolving
-✨ Deployment frequency optimization is accelerating
-🚀 Competitive advantages around technical debt are emerging
+✨ Uptime optimization is accelerating
 
 What's your experience with AI? Share below! 👇
 
@@ -509,8 +356,7 @@ What's your experience with AI? Share below! 👇
         
         return
     
-    # Rest of the app for users who provided email
-    # Sidebar for inputs
+    # Main app for users who provided email
     with st.sidebar:
         # Show user info
         if st.session_state.get('user_email'):
@@ -575,35 +421,31 @@ What's your experience with AI? Share below! 👇
         
         # Show loading spinner
         with st.spinner("Generating your LinkedIn posts..."):
-            content = generate_linkedin_posts(topic, industry, tone, audience, post_type)
+            posts = generate_posts(topic, industry, tone, audience, post_type)
         
-        if content:
+        if posts:
             st.success("✅ Posts generated successfully!")
             
-            # Parse and display posts
-            posts = parse_posts(content)
+            st.markdown("## 📱 Your Generated Posts")
             
-            if posts:
-                st.markdown("## 📱 Your Generated Posts")
-                
-                for i, post in enumerate(posts, 1):
-                    with st.expander(f"📝 Post {i}", expanded=True):
-                        st.markdown(f'<div class="post-container">{post}</div>', unsafe_allow_html=True)
-                        
-                        if st.button(f"📋 Copy Post {i}", key=f"copy_{i}"):
-                            st.success(f"Post {i} ready to copy!")
-                
-                # Download option
-                st.markdown("---")
-                all_posts = "\n\n" + "="*50 + "\n\n".join([f"POST {i+1}:\n{post}" for i, post in enumerate(posts)])
-                st.download_button(
-                    label="📥 Download All Posts",
-                    data=all_posts,
-                    file_name=f"linkedin_posts_{topic.replace(' ', '_')}.txt",
-                    mime="text/plain"
-                )
-            else:
-                st.error("Could not parse the generated posts. Please try again.")
+            for i, post in enumerate(posts, 1):
+                with st.expander(f"📝 Post {i}", expanded=True):
+                    st.markdown(f'<div class="post-container">{post}</div>', unsafe_allow_html=True)
+                    
+                    if st.button(f"📋 Copy Post {i}", key=f"copy_{i}"):
+                        st.success(f"Post {i} ready to copy!")
+            
+            # Download option
+            st.markdown("---")
+            all_posts_text = "\n\n" + "="*50 + "\n\n".join([f"POST {i+1}:\n{post}" for i, post in enumerate(posts)])
+            st.download_button(
+                label="📥 Download All Posts",
+                data=all_posts_text,
+                file_name=f"linkedin_posts_{topic.replace(' ', '_')}.txt",
+                mime="text/plain"
+            )
+        else:
+            st.error("Could not generate posts. Please try again.")
     
     else:
         # Show features for logged-in users
