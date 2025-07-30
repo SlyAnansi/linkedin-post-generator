@@ -5,6 +5,9 @@ import os
 import random
 from dotenv import load_dotenv
 from datetime import datetime
+import smtplib
+from email.mime.text import MimeText
+from email.mime.multipart import MimeMultipart
 
 # Load environment variables
 load_dotenv()
@@ -42,6 +45,20 @@ st.markdown("""
         font-weight: 500;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         line-height: 1.6;
+    }
+    .email-button {
+        background-color: #0066cc;
+        color: white;
+        padding: 10px 20px;
+        text-decoration: none;
+        border-radius: 5px;
+        display: inline-block;
+        margin: 5px 0;
+    }
+    .email-button:hover {
+        background-color: #0052a3;
+        color: white;
+        text-decoration: none;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -432,8 +449,23 @@ What's your experience with AI? Share below! 👇
                 with st.expander(f"📝 Post {i}", expanded=True):
                     st.markdown(f'<div class="post-container">{post}</div>', unsafe_allow_html=True)
                     
-                    if st.button(f"📋 Copy Post {i}", key=f"copy_{i}"):
-                        st.success(f"Post {i} ready to copy!")
+                    # Create two columns for buttons
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        if st.button(f"📋 Copy Post {i}", key=f"copy_{i}"):
+                            st.success(f"Post {i} ready to copy!")
+                    
+                    with col2:
+                        if st.button(f"📧 Send to LinkedIn", key=f"email_{i}"):
+                            # Create a mailto link that opens their email client
+                            email_subject = "LinkedIn Post from Generator"
+                            email_body = post.replace('\n', '%0D%0A').replace(' ', '%20')
+                            mailto_link = f"mailto:anansivc.5dcz24@zapiermail.com?subject={email_subject}&body={email_body}"
+                            
+                            st.markdown(f'<a href="{mailto_link}" target="_blank" style="background-color: #0066cc; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 10px 0;">📧 Open Email Client</a>', unsafe_allow_html=True)
+                            
+                            st.success("✅ Click the blue button above to open your email client with the post pre-filled!")
             
             # Download option
             st.markdown("---")
