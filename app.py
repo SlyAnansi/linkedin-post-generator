@@ -453,25 +453,23 @@ What's your experience with AI? Share below! 👇
                         if st.button(f"📋 Copy Post {i}", key=f"copy_{i}"):
                             # Store post in session state for copying
                             st.session_state[f'copied_post_{i}'] = post
-                            st.success(f"✅ Post {i} copied! Paste with Ctrl+V")
-                            # Show the post content in a text area for easy copying
-                            st.text_area("📋 Copy this text:", value=post, height=100, key=f"copy_area_{i}")
+                            st.success(f"✅ Post {i} copied! Use the text box below:")
+                            
+                        # Always show text area for easy copying
+                        st.text_area("📋 Copy this text:", value=post, height=100, key=f"copy_area_{i}")
                     
                     with col2:
-                        # Always show the email link (no button needed)
-                        email_subject = "LinkedIn Post from Generator"
-                        # URL encode the post content properly
-                        email_body = post.replace('\n', '%0D%0A').replace(' ', '%20').replace('#', '%23').replace('&', '%26')
-                        mailto_link = f"mailto:anansivc.5dcz24@zapiermail.com?subject={email_subject}&body={email_body}"
+                        # Email instructions and link
+                        st.markdown("**📧 Send to LinkedIn:**")
+                        st.write("Email to: `anansivc.5dcz24@zapiermail.com`")
                         
-                        st.markdown(f'<a href="{mailto_link}" style="background-color: #0066cc; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 5px 0; text-align: center; width: 200px;">📧 Send to LinkedIn</a>', unsafe_allow_html=True)
+                        # Simple mailto link
+                        email_subject = "LinkedIn Post"
+                        mailto_link = f"mailto:anansivc.5dcz24@zapiermail.com?subject={email_subject}"
                         
-                        # Also provide manual instructions
-                        with st.expander("📧 Manual Email Instructions"):
-                            st.write("**To:** anansivc.5dcz24@zapiermail.com")
-                            st.write("**Subject:** LinkedIn Post")
-                            st.write("**Body:** Copy the post content above")
-                            st.code("anansivc.5dcz24@zapiermail.com")
+                        st.markdown(f'<a href="{mailto_link}" style="background-color: #0066cc; color: white; padding: 8px 16px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 5px 0;">📧 Open Email</a>', unsafe_allow_html=True)
+                        
+                        st.write("📝 Copy the post from the left and paste into email body")
             
             # Download option
             st.markdown("---")
