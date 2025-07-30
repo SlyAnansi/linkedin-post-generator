@@ -446,30 +446,54 @@ What's your experience with AI? Share below! 👇
                 with st.expander(f"📝 Post {i}", expanded=True):
                     st.markdown(f'<div class="post-container">{post}</div>', unsafe_allow_html=True)
                     
-                    # Create two columns for buttons
-                    col1, col2 = st.columns(2)
+                    # Create three columns for buttons
+                    col1, col2, col3 = st.columns(3)
                     
                     with col1:
-                        if st.button(f"📋 Copy Post {i}", key=f"copy_{i}"):
-                            # Store post in session state for copying
-                            st.session_state[f'copied_post_{i}'] = post
-                            st.success(f"✅ Post {i} copied! Use the text box below:")
+                        # One-click copy with JavaScript (fallback to text area)
+                        copy_id = f"post_content_{i}"
+                        st.markdown(f"""
+                        <div>
+                            <button onclick="copyToClipboard{i}()" style="background-color: #28a745; color: white; padding: 8px 16px; border: none; border-radius: 5px; cursor: pointer; margin: 5px 0;">
+                                📋 Copy Post
+                            </button>
+                            <textarea id="{copy_id}" style="position: absolute; left: -9999px;">{post}</textarea>
+                        </div>
+                        <script>
+                        function copyToClipboard{i}() {{
+                            var copyText = document.getElementById("{copy_id}");
+                            copyText.select();
+                            copyText.setSelectionRange(0, 99999);
+                            document.execCommand("copy");
                             
-                        # Always show text area for easy copying
-                        st.text_area("📋 Copy this text:", value=post, height=100, key=f"copy_area_{i}")
+                            // Visual feedback
+                            event.target.innerHTML = "✅ Copied!";
+                            event.target.style.backgroundColor = "#28a745";
+                            setTimeout(function() {{
+                                event.target.innerHTML = "📋 Copy Post";
+                                event.target.style.backgroundColor = "#28a745";
+                            }}, 2000);
+                        }}
+                        </script>
+                        """, unsafe_allow_html=True)
                     
                     with col2:
-                        # Email instructions and link
-                        st.markdown("**📧 Send to LinkedIn:**")
-                        st.write("Email to: `anansivc.5dcz24@zapiermail.com`")
-                        
-                        # Simple mailto link
+                        # Direct email link with post content
                         email_subject = "LinkedIn Post"
-                        mailto_link = f"mailto:anansivc.5dcz24@zapiermail.com?subject={email_subject}"
+                        # Simplified URL encoding
+                        email_body = post.replace('\n', '%0A').replace(' ', '%20')
+                        mailto_link = f"mailto:anansivc.5dcz24@zapiermail.com?subject={email_subject}&body={email_body}"
                         
-                        st.markdown(f'<a href="{mailto_link}" style="background-color: #0066cc; color: white; padding: 8px 16px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 5px 0;">📧 Open Email</a>', unsafe_allow_html=True)
-                        
-                        st.write("📝 Copy the post from the left and paste into email body")
+                        st.markdown(f"""
+                        <a href="{mailto_link}" style="background-color: #0066cc; color: white; padding: 8px 16px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 5px 0;">
+                            📧 Send to LinkedIn
+                        </a>
+                        """, unsafe_allow_html=True)
+                    
+                    with col3:
+                        # Quick actions
+                        st.markdown("**Quick Email:**")
+                        st.code("anansivc.5dcz24@zapiermail.com", language=None)
             
             # Download option
             st.markdown("---")
@@ -499,7 +523,82 @@ What's your experience with AI? Share below! 👇
             st.markdown("### 📈 Boost Engagement")
             st.markdown("AI-optimized content designed for maximum LinkedIn engagement")
 
-    # Footer
+    # Footer with Feedback Section
+    st.markdown("---")
+    
+    # Feedback Section
+    st.markdown("## 💬 We'd Love Your Feedback!")
+    
+    feedback_col1, feedback_col2 = st.columns([2, 1])
+    
+    with feedback_col1:
+        st.markdown("**Help us improve this tool:**")
+        
+        with st.form("feedback_form"):
+            # Rating
+            rating = st.select_slider(
+                "How would you rate this tool?",
+                options=[1, 2, 3, 4, 5],
+                value=5,
+                format_func=lambda x: "⭐" * x
+            )
+            
+            # Feedback type
+            feedback_type = st.selectbox(
+                "What type of feedback?",
+                ["General feedback", "Feature request", "Bug report", "Content quality", "User experience"]
+            )
+            
+            # Feedback text
+            feedback_text = st.text_area(
+                "Your feedback:",
+                placeholder="Tell us what you think! What features would you like to see? Any issues you encountered?",
+                height=100
+            )
+            
+            # Optional email for follow-up
+            feedback_email = st.text_input(
+                "Email (optional - for follow-up):",
+                placeholder="your.email@company.com"
+            )
+            
+            submitted_feedback = st.form_submit_button("📤 Submit Feedback", type="primary")
+            
+            if submitted_feedback:
+                if feedback_text:
+                    # In production, save to database or send email
+                    feedback_data = {
+                        "rating": rating,
+                        "type": feedback_type,
+                        "feedback": feedback_text,
+                        "email": feedback_email,
+                        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    }
+                    
+                    st.success("✅ Thank you for your feedback! We really appreciate it.")
+                    st.balloons()
+                else:
+                    st.error("Please enter some feedback before submitting.")
+    
+    with feedback_col2:
+        st.markdown("**Quick Actions:**")
+        
+        # Quick feedback buttons
+        if st.button("👍 Love it!", key="love_it"):
+            st.success("Thanks! We're glad you love it! 🎉")
+            
+        if st.button("🐛 Report Bug", key="report_bug"):
+            st.info("Please use the feedback form to describe the bug. We'll fix it ASAP!")
+            
+        if st.button("💡 Suggest Feature", key="suggest_feature"):
+            st.info("Great! Use the feedback form to tell us what feature you'd like to see!")
+        
+        # Contact info
+        st.markdown("**Get in Touch:**")
+        st.markdown("📧 support@yourapp.com")
+        st.markdown("🐦 @YourAppTwitter")
+        st.markdown("💼 LinkedIn: YourAppPage")
+    
     st.markdown("---")
     st.markdown("**Ready to dominate LinkedIn? Generate your posts above! 🚀**")
     st.markdown("*Built with ❤️ for LinkedIn professionals*")
