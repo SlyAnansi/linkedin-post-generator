@@ -451,18 +451,27 @@ What's your experience with AI? Share below! 👇
                     
                     with col1:
                         if st.button(f"📋 Copy Post {i}", key=f"copy_{i}"):
-                            st.success(f"Post {i} ready to copy!")
+                            # Store post in session state for copying
+                            st.session_state[f'copied_post_{i}'] = post
+                            st.success(f"✅ Post {i} copied! Paste with Ctrl+V")
+                            # Show the post content in a text area for easy copying
+                            st.text_area("📋 Copy this text:", value=post, height=100, key=f"copy_area_{i}")
                     
                     with col2:
-                        if st.button(f"📧 Send to LinkedIn", key=f"email_{i}"):
-                            # Create a mailto link that opens their email client
-                            email_subject = "LinkedIn Post from Generator"
-                            email_body = post.replace('\n', '%0D%0A').replace(' ', '%20')
-                            mailto_link = f"mailto:anansivc.5dcz24@zapiermail.com?subject={email_subject}&body={email_body}"
-                            
-                            st.markdown(f'<a href="{mailto_link}" target="_blank" style="background-color: #0066cc; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 10px 0;">📧 Open Email Client</a>', unsafe_allow_html=True)
-                            
-                            st.success("✅ Click the blue button above to open your email client with the post pre-filled!")
+                        # Always show the email link (no button needed)
+                        email_subject = "LinkedIn Post from Generator"
+                        # URL encode the post content properly
+                        email_body = post.replace('\n', '%0D%0A').replace(' ', '%20').replace('#', '%23').replace('&', '%26')
+                        mailto_link = f"mailto:anansivc.5dcz24@zapiermail.com?subject={email_subject}&body={email_body}"
+                        
+                        st.markdown(f'<a href="{mailto_link}" style="background-color: #0066cc; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 5px 0; text-align: center; width: 200px;">📧 Send to LinkedIn</a>', unsafe_allow_html=True)
+                        
+                        # Also provide manual instructions
+                        with st.expander("📧 Manual Email Instructions"):
+                            st.write("**To:** anansivc.5dcz24@zapiermail.com")
+                            st.write("**Subject:** LinkedIn Post")
+                            st.write("**Body:** Copy the post content above")
+                            st.code("anansivc.5dcz24@zapiermail.com")
             
             # Download option
             st.markdown("---")
