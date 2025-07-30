@@ -446,54 +446,23 @@ What's your experience with AI? Share below! 👇
                 with st.expander(f"📝 Post {i}", expanded=True):
                     st.markdown(f'<div class="post-container">{post}</div>', unsafe_allow_html=True)
                     
-                    # Create three columns for buttons
-                    col1, col2, col3 = st.columns(3)
+                    # Create two columns for actions
+                    col1, col2 = st.columns(2)
                     
                     with col1:
-                        # One-click copy with JavaScript (fallback to text area)
-                        copy_id = f"post_content_{i}"
-                        st.markdown(f"""
-                        <div>
-                            <button onclick="copyToClipboard{i}()" style="background-color: #28a745; color: white; padding: 8px 16px; border: none; border-radius: 5px; cursor: pointer; margin: 5px 0;">
-                                📋 Copy Post
-                            </button>
-                            <textarea id="{copy_id}" style="position: absolute; left: -9999px;">{post}</textarea>
-                        </div>
-                        <script>
-                        function copyToClipboard{i}() {{
-                            var copyText = document.getElementById("{copy_id}");
-                            copyText.select();
-                            copyText.setSelectionRange(0, 99999);
-                            document.execCommand("copy");
-                            
-                            // Visual feedback
-                            event.target.innerHTML = "✅ Copied!";
-                            event.target.style.backgroundColor = "#28a745";
-                            setTimeout(function() {{
-                                event.target.innerHTML = "📋 Copy Post";
-                                event.target.style.backgroundColor = "#28a745";
-                            }}, 2000);
-                        }}
-                        </script>
-                        """, unsafe_allow_html=True)
+                        # Show post content in a code block for easy copying
+                        st.code(post, language=None)
+                        st.caption("👆 Select all text above (Ctrl+A) and copy (Ctrl+C)")
                     
                     with col2:
-                        # Direct email link with post content
-                        email_subject = "LinkedIn Post"
-                        # Simplified URL encoding
-                        email_body = post.replace('\n', '%0A').replace(' ', '%20')
-                        mailto_link = f"mailto:anansivc.5dcz24@zapiermail.com?subject={email_subject}&body={email_body}"
-                        
-                        st.markdown(f"""
-                        <a href="{mailto_link}" style="background-color: #0066cc; color: white; padding: 8px 16px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 5px 0;">
-                            📧 Send to LinkedIn
-                        </a>
-                        """, unsafe_allow_html=True)
-                    
-                    with col3:
-                        # Quick actions
-                        st.markdown("**Quick Email:**")
+                        st.markdown("**📧 Email to LinkedIn:**")
                         st.code("anansivc.5dcz24@zapiermail.com", language=None)
+                        
+                        # Simple mailto link
+                        mailto_link = f"mailto:anansivc.5dcz24@zapiermail.com?subject=LinkedIn Post"
+                        st.markdown(f'[📧 Open Email Client]({mailto_link})')
+                        
+                        st.caption("1. Copy post from left\n2. Click email link above\n3. Paste and send")
             
             # Download option
             st.markdown("---")
