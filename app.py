@@ -803,26 +803,105 @@ def adjust_word_count(post, target_word_count):
     current_count = len(words)
     
     if target_word_count == "Short (50-100 words)":
-        target = 75
+        target_min, target_max = 50, 100
     elif target_word_count == "Medium (100-200 words)":
-        target = 150
+        target_min, target_max = 100, 200
     else:  # Long (200-300 words)
-        target = 250
+        target_min, target_max = 200, 300
     
-    if current_count > target:
-        # Truncate while keeping hashtags
+    # If current post is already in target range, return as is
+    if target_min <= current_count <= target_max:
+        return post
+    
+    # If post is too long, truncate intelligently
+    if current_count > target_max:
         lines = post.split('\n')
-        hashtag_line = [line for line in lines if '#' in line]
-        content_lines = [line for line in lines if '#' not in line]
+        hashtag_lines = [line for line in lines if '#' in line]
+        content_lines = [line for line in lines if '#' not in line and line.strip()]
         
-        content_text = ' '.join(content_lines)
+        # Keep essential content and hashtags
+        content_text = '\n'.join(content_lines)
         content_words = content_text.split()
         
-        if len(content_words) > target - 10:  # Reserve space for hashtags
-            truncated_content = ' '.join(content_words[:target-10])
-            return truncated_content + '\n\n' + (hashtag_line[0] if hashtag_line else '')
+        if len(content_words) > target_max - 10:
+            truncated_content = ' '.join(content_words[:target_max-10])
+            return truncated_content + '\n\n' + ('\n'.join(hashtag_lines) if hashtag_lines else '')
+    
+    # If post is too short, expand it
+    if current_count < target_min:
+        return expand_post_content(post, target_min, target_max)
     
     return post
+
+def expand_post_content(post, target_min, target_max):
+    """Expand post content to meet word count requirements"""
+    
+    lines = post.split('\n')
+    hashtag_lines = [line for line in lines if '#' in line]
+    content_lines = [line for line in lines if '#' not in line and line.strip()]
+    
+    # Expansion strategies based on content type
+    expansion_elements = [
+        "Here's what this means for professionals:",
+        "This trend is accelerating across industries.",
+        "The data supports this shift in thinking.",
+        "Companies are already seeing positive results.",
+        "Early adopters are gaining competitive advantages.",
+        "This approach requires strategic planning and execution.",
+        "The key is balancing innovation with practical implementation.",
+        "Success depends on strong leadership and team buy-in.",
+        "Consider the long-term implications for your industry.",
+        "This represents a fundamental shift in how we work.",
+        "The impact extends beyond just technology adoption.",
+        "Organizations need to prepare for this evolution.",
+        "Training and change management are critical components.",
+        "The return on investment justifies the initial effort.",
+        "Building the right team structure is essential for success."
+    ]
+    
+    # Add contextual expansions
+    context_additions = [
+        "From my experience working with various teams, this approach consistently delivers results.",
+        "Industry research confirms what many professionals have suspected for months.",
+        "The most successful implementations share common characteristics worth noting.",
+        "Breaking this down into actionable steps makes the process more manageable.",
+        "Looking at case studies from leading companies reveals interesting patterns.",
+        "The timing couldn't be better given current market conditions.",
+        "This aligns perfectly with broader workplace transformation trends.",
+        "Smart organizations are already positioning themselves for this shift.",
+        "The competitive advantage goes to those who act decisively now.",
+        "Risk management strategies should account for these emerging realities."
+    ]
+    
+    # Calculate how many words we need to add
+    current_words = len(' '.join(content_lines).split())
+    words_needed = target_min - current_words
+    
+    expanded_content = content_lines.copy()
+    
+    # Add expansions until we reach target
+    while len(' '.join(expanded_content).split()) < target_min:
+        remaining_words = target_min - len(' '.join(expanded_content).split())
+        
+        if remaining_words > 15:
+            # Add longer contextual addition
+            addition = random.choice(context_additions)
+            expanded_content.insert(-1, addition)  # Insert before last line
+        else:
+            # Add shorter element
+            addition = random.choice(expansion_elements)
+            expanded_content.append(addition)
+        
+        # Prevent infinite loop
+        if len(' '.join(expanded_content).split()) > target_max:
+            break
+    
+    # Reconstruct the post
+    final_content = '\n'.join(expanded_content)
+    if hashtag_lines:
+        final_content += '\n\n' + '\n'.join(hashtag_lines)
+    
+    return final_content
 
 def get_word_count(text):
     """Get word count of text"""
