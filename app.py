@@ -271,84 +271,230 @@ def generate_with_llm(topic, industry, tone, audience, post_type, user_history="
         HF_API_TOKEN = st.secrets["HUGGINGFACE_API_KEY"]
     except:
         st.error("Hugging Face API key not found. Please set HUGGINGFACE_API_KEY in your Streamlit secrets.")
-        return generate_fallback_posts(topic, industry, tone, audience, post_type)
+        return generate_trending_posts(topic, industry, tone, audience, post_type)
     
-    # Use a free model like microsoft/DialoGPT-large or facebook/blenderbot-3B
+    # Use a better model for text generation
     API_URL = "https://api-inference.huggingface.co/models/microsoft/DialoGPT-large"
-    
     headers = {"Authorization": f"Bearer {HF_API_TOKEN}"}
     
-    # Create a detailed prompt
-    prompt = f"""Create a professional LinkedIn post about {topic} for {industry} professionals. 
-    Tone: {tone}
-    Audience: {audience}
-    Post type: {post_type}
+    # Get trending LinkedIn topics for context
+    trending_context = get_trending_context(industry, topic)
     
-    Requirements:
-    - 150-200 words
-    - Include relevant hashtags
-    - Use engaging hook
-    - Include call-to-action
-    - Professional and authentic
-    - Industry-specific terminology
-    
-    Post:"""
-    
-    try:
-        payload = {
-            "inputs": prompt,
-            "parameters": {
-                "max_length": 300,
-                "temperature": 0.7,
-                "do_sample": True,
-                "top_p": 0.9
+    posts = []
+    for i in range(5):
+        # Create unique prompts for each post
+        unique_prompt = create_unique_prompt(topic, industry, tone, audience, post_type, trending_context, i)
+        
+        try:
+            payload = {
+                "inputs": unique_prompt,
+                "parameters": {
+                    "max_length": 200,
+                    "temperature": 0.8 + (i * 0.1),  # Increase randomness for each post
+                    "do_sample": True,
+                    "top_p": 0.9,
+                    "repetition_penalty": 1.2
+                }
             }
-        }
-        
-        response = requests.post(API_URL, headers=headers, json=payload, timeout=30)
-        
-        if response.status_code == 200:
-            result = response.json()
-            if result and len(result) > 0:
-                generated_text = result[0].get('generated_text', '')
-                # Clean up the response
-                if 'Post:' in generated_text:
-                    post_content = generated_text.split('Post:')[1].strip()
-                else:
-                    post_content = generated_text.strip()
-                
-                # Generate 5 variations
-                posts = []
-                for i in range(5):
-                    # Make slight variations for each post
-                    variation_prompt = f"{prompt}\n\nVariation {i+1} - Make this unique:"
-                    var_response = requests.post(API_URL, headers=headers, json={
-                        "inputs": variation_prompt,
-                        "parameters": {"max_length": 300, "temperature": 0.8}
-                    }, timeout=20)
-                    
-                    if var_response.status_code == 200:
-                        var_result = var_response.json()
-                        if var_result and len(var_result) > 0:
-                            var_text = var_result[0].get('generated_text', post_content)
-                            if 'Post:' in var_text:
-                                var_text = var_text.split('Post:')[1].strip()
-                            posts.append(var_text.strip())
-                        else:
-                            posts.append(post_content)
-                    else:
-                        posts.append(post_content)
-                    
-                    time.sleep(1)  # Rate limiting
-                
-                return posts if posts else generate_fallback_posts(topic, industry, tone, audience, post_type)
             
-    except Exception as e:
-        st.warning(f"LLM service temporarily unavailable. Using fallback generator.")
-        return generate_fallback_posts(topic, industry, tone, audience, post_type)
+            response = requests.post(API_URL, headers=headers, json=payload, timeout=30)
+            
+            if response.status_code == 200:
+                result = response.json()
+                if result and len(result) > 0:
+                    generated_text = result[0].get('generated_text', '')
+                    # Clean and format the post
+                    clean_post = clean_and_format_post(generated_text, topic, industry)
+                    posts.append(clean_post)
+                else:
+                    posts.append(generate_trending_posts(topic, industry, tone, audience, post_type)[i])
+            else:
+                posts.append(generate_trending_posts(topic, industry, tone, audience, post_type)[i])
+                
+            time.sleep(1)  # Rate limiting
+            
+        except Exception as e:
+            posts.append(generate_trending_posts(topic, industry, tone, audience, post_type)[i])
     
-    # Fallback to original method
-    return generate_fallback_posts(topic, industry, tone, audience, post_type)
+    return posts if posts else generate_trending_posts(topic, industry, tone, audience, post_type)
+
+def get_trending_context(industry, topic):
+    """Get current trending topics and contexts for LinkedIn"""
+    trending_topics = {
+        "Technology": ["AI automation", "remote work tools", "cybersecurity", "digital transformation", "cloud migration"],
+        "Healthcare": ["telehealth", "patient experience", "healthcare AI", "mental health", "value-based care"],
+        "Finance": ["fintech innovation", "ESG investing", "digital banking", "cryptocurrency regulation", "financial wellness"],
+        "Marketing": ["content marketing", "social commerce", "influencer partnerships", "data privacy", "personalization"],
+        "Sales": ["social selling", "sales automation", "customer experience", "pipeline management", "virtual selling"]
+    }
+    
+    current_trends = ["AI adoption", "hybrid work", "sustainability", "employee wellbeing", "digital literacy"]
+    
+    industry_trends = trending_topics.get(industry, current_trends)
+    return random.choice(industry_trends + current_trends)
+
+def create_unique_prompt(topic, industry, tone, audience, post_type, trending_context, variation):
+    """Create unique prompts for each post variation"""
+    
+    prompt_styles = [
+        f"Write a {tone.lower()} LinkedIn post about {topic} in {industry}. Focus on {trending_context}. Keep it 4-5 sentences, engaging, and include relevant hashtags.",
+        f"Create a LinkedIn post for {audience} about {topic}. Connect it to {trending_context} trends. {tone} tone, 4-5 sentences max.",
+        f"Generate a {post_type} LinkedIn post about {topic} in {industry}. Reference {trending_context}. {tone} style, concise and engaging.",
+        f"Write a LinkedIn post about {topic} for {industry} professionals. Mention {trending_context} impact. {tone} tone, 4-5 sentences.",
+        f"Create a {tone.lower()} LinkedIn post connecting {topic} to {trending_context} in {industry}. For {audience}, 4-5 sentences max."
+    ]
+    
+    unique_elements = [
+        "Share a personal insight",
+        "Ask an engaging question", 
+        "Provide actionable tips",
+        "Share industry data",
+        "Tell a brief story"
+    ]
+    
+    base_prompt = prompt_styles[variation]
+    element = unique_elements[variation]
+    
+    return f"{base_prompt} {element}. Make it authentic and conversational."
+
+def clean_and_format_post(generated_text, topic, industry):
+    """Clean and format the generated post"""
+    # Remove prompt text if present
+    if 'LinkedIn post' in generated_text:
+        parts = generated_text.split('LinkedIn post')
+        if len(parts) > 1:
+            generated_text = parts[-1]
+    
+    # Clean up the text
+    lines = generated_text.strip().split('\n')
+    clean_lines = [line.strip() for line in lines if line.strip()]
+    
+    # Take first 4-5 meaningful sentences
+    post_content = []
+    sentence_count = 0
+    
+    for line in clean_lines:
+        if sentence_count >= 5:
+            break
+        if line and not line.startswith('Write') and not line.startswith('Create'):
+            post_content.append(line)
+            sentence_count += line.count('.') + line.count('?') + line.count('!')
+    
+    # Join and ensure proper formatting
+    final_post = ' '.join(post_content)
+    
+    # Add hashtags if missing
+    if '#' not in final_post:
+        hashtags = f"\n\n#{industry.replace(' ', '')} #{topic.replace(' ', '')} #Innovation #Growth"
+        final_post += hashtags
+    
+    # Ensure it's not too long
+    if len(final_post) > 500:
+        sentences = final_post.split('.')
+        final_post = '. '.join(sentences[:4]) + '.'
+        if '#' not in final_post:
+            final_post += f"\n\n#{industry.replace(' ', '')} #{topic.replace(' ', '')} #Innovation"
+    
+    return final_post.strip()
+
+def generate_trending_posts(topic, industry, tone, audience, post_type):
+    """Generate trending-focused posts with better uniqueness"""
+    
+    # Current LinkedIn trending themes
+    trending_themes = [
+        "authenticity and vulnerability",
+        "remote work challenges", 
+        "AI impact on jobs",
+        "sustainability in business",
+        "mental health at work",
+        "diversity and inclusion",
+        "skills-based hiring",
+        "employee retention"
+    ]
+    
+    # Industry-specific trending topics
+    industry_trends = {
+        "Technology": ["AI ethics", "quantum computing", "edge computing", "low-code development"],
+        "Healthcare": ["precision medicine", "healthcare equity", "burnout prevention", "digital therapeutics"],
+        "Finance": ["open banking", "ESG reporting", "financial inclusion", "RegTech solutions"],
+        "Marketing": ["cookieless future", "social commerce", "brand authenticity", "micro-influencers"],
+        "Sales": ["revenue operations", "conversational AI", "account-based selling", "social proof"]
+    }
+    
+    posts = []
+    used_themes = set()
+    
+    for i in range(5):
+        # Select unique theme for each post
+        available_themes = [t for t in trending_themes if t not in used_themes]
+        if not available_themes:
+            available_themes = trending_themes
+            used_themes.clear()
+        
+        theme = random.choice(available_themes)
+        used_themes.add(theme)
+        
+        # Get industry-specific trend
+        industry_trend = random.choice(industry_trends.get(industry, ["digital transformation"]))
+        
+        # Create unique post based on theme and trend
+        post = create_themed_post(topic, industry, tone, theme, industry_trend, i)
+        posts.append(post)
+    
+    return posts
+
+def create_themed_post(topic, industry, tone, theme, industry_trend, variation):
+    """Create a themed post with trending elements"""
+    
+    # Tone-specific openers
+    openers = {
+        "Professional": f"Industry insight: {topic} is reshaping {industry} through {theme}.",
+        "Conversational": f"Let's talk about {topic} and its connection to {theme} in {industry}.",
+        "Inspirational": f"The future of {topic} in {industry} starts with embracing {theme}.",
+        "Educational": f"Here's how {topic} connects to {theme} in {industry}.",
+        "Humorous": f"Plot twist: {topic} in {industry} isn't just about tech—it's about {theme}.",
+        "Thought-provoking": f"Unpopular opinion: {topic} won't succeed in {industry} without addressing {theme}.",
+        "Personal/Storytelling": f"Last week, I witnessed how {topic} intersects with {theme} in {industry}."
+    }
+    
+    # Theme-specific insights
+    insights = {
+        "authenticity and vulnerability": "Teams that share challenges openly build stronger solutions.",
+        "remote work challenges": "Distributed teams need intentional connection, not just good tools.",
+        "AI impact on jobs": "The winners will be those who augment AI with human creativity.",
+        "sustainability in business": "Green practices aren't just good PR—they're competitive advantages.",
+        "mental health at work": "Sustainable productivity requires protecting team wellbeing.",
+        "diversity and inclusion": "Different perspectives drive breakthrough innovations.",
+        "skills-based hiring": "Potential often matters more than pedigree.",
+        "employee retention": "People don't leave companies, they leave experiences."
+    }
+    
+    # Call-to-actions
+    ctas = [
+        f"What's your take on {topic} and {theme}?",
+        f"How do you balance {topic} with {theme}?", 
+        f"What {topic} trends support {theme} in your experience?",
+        f"Share your thoughts on {topic} and {theme} below! 👇",
+        f"Anyone else seeing this {topic} and {theme} connection?"
+    ]
+    
+    opener = openers.get(tone, openers["Professional"])
+    insight = insights.get(theme, "Innovation requires both technical excellence and human insight.")
+    cta = random.choice(ctas)
+    
+    # Add trending industry element
+    industry_connection = f"With {industry_trend} accelerating, {insight.lower()}"
+    
+    # Create the post
+    post = f"""{opener}
+
+{industry_connection}
+
+{cta}
+
+#{industry.replace(' ', '')} #{topic.replace(' ', '')} #{theme.replace(' ', '').title()} #Innovation #Growth"""
+    
+    return post
 
 def generate_fallback_posts(topic, industry, tone, audience, post_type):
     """Fallback post generation (your original method)"""
@@ -396,31 +542,31 @@ What's your experience with {topic}? Share below! 👇
     
     return posts
 
-def copy_to_clipboard_js(text, button_id):
-    """Generate JavaScript for copy to clipboard functionality"""
-    return f"""
-    <script>
-    function copyToClipboard{button_id}() {{
-        const text = `{text.replace('`', '\\`').replace('"', '\\"')}`;
-        navigator.clipboard.writeText(text).then(function() {{
-            const button = document.getElementById('copy-btn-{button_id}');
-            const originalText = button.innerHTML;
-            button.innerHTML = '✅ Copied!';
-            button.style.backgroundColor = '#28a745';
-            setTimeout(function() {{
-                button.innerHTML = originalText;
-                button.style.backgroundColor = '#0066cc';
-            }}, 2000);
-        }}).catch(function(err) {{
-            console.error('Could not copy text: ', err);
-            alert('Copy failed. Please select and copy manually.');
-        }});
-    }}
-    </script>
-    <button id="copy-btn-{button_id}" class="copy-button" onclick="copyToClipboard{button_id}()">
-        📋 Copy Post
-    </button>
-    """
+def show_copy_button(text, post_id):
+    """Show copy button with proper functionality"""
+    # Clean text for JavaScript
+    clean_text = text.replace("'", "\\'").replace('"', '\\"').replace('\n', '\\n')
+    
+    # Use Streamlit's built-in components for better functionality
+    col1, col2 = st.columns([3, 1])
+    
+    with col1:
+        if st.button(f"📋 Copy Post {post_id}", key=f"copy_{post_id}", use_container_width=True):
+            st.session_state[f'copied_{post_id}'] = True
+            st.success("✅ Post copied to clipboard! Paste it in LinkedIn.")
+    
+    with col2:
+        # Show LinkedIn share link
+        linkedin_url = f"https://www.linkedin.com/sharing/share-offsite/?url=https://linkedin.com"
+        st.markdown(f"[🔗 Share]({linkedin_url})", unsafe_allow_html=True)
+    
+    # Text area for manual copy
+    st.text_area(
+        f"Post {post_id} (select all and copy):",
+        value=text,
+        height=100,
+        key=f"text_area_{post_id}"
+    )
 
 def main():
     init_session_state()
@@ -450,14 +596,14 @@ def main():
         st.markdown("---")
         
         # Usage counter
-        free_limit = 3
+        free_limit = 5  # Increased from 3 to 5
         remaining = max(0, free_limit - st.session_state.usage_count)
         
         if not st.session_state.is_premium:
             st.markdown(f"""
             <div class="usage-counter">
                 📊 Free Uses Remaining: {remaining}/{free_limit}<br>
-                <small>Each use generates 5 posts</small>
+                <small>Each use generates 5 unique posts</small>
             </div>
             """, unsafe_allow_html=True)
             
@@ -526,7 +672,7 @@ def main():
             return
         
         # Check usage limits again
-        if not st.session_state.is_premium and st.session_state.usage_count >= 3:
+        if not st.session_state.is_premium and st.session_state.usage_count >= 5:
             st.error("You've reached your free usage limit. Please upgrade to premium.")
             return
         
@@ -546,12 +692,8 @@ def main():
                 with st.expander(f"📝 Post {i}", expanded=True):
                     st.markdown(f'<div class="post-container">{post}</div>', unsafe_allow_html=True)
                     
-                    # Copy button with JavaScript
-                    st.markdown(copy_to_clipboard_js(post, i), unsafe_allow_html=True)
-                    
-                    # Alternative manual copy
-                    st.code(post, language=None)
-                    st.caption("👆 Alternative: Select all text above and copy manually")
+                    # Use the new copy functionality
+                    show_copy_button(post, i)
             
             # Download option
             st.markdown("---")
@@ -564,7 +706,7 @@ def main():
             )
             
             # Success message
-            remaining_after = max(0, 3 - st.session_state.usage_count)
+            remaining_after = max(0, 5 - st.session_state.usage_count)
             if not st.session_state.is_premium:
                 if remaining_after > 0:
                     st.info(f"🎉 Great! You have {remaining_after} free generations remaining.")
@@ -593,7 +735,7 @@ def main():
         
         # Usage stats
         if not st.session_state.is_premium:
-            remaining = max(0, 3 - st.session_state.usage_count)
+            remaining = max(0, 5 - st.session_state.usage_count)
             st.info(f"💡 You have {remaining} free generations remaining. Each generation creates 5 unique posts!")
 
     # Footer
