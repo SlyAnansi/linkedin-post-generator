@@ -182,6 +182,32 @@ st.markdown("""
     .stSelectbox label, .stTextInput label, .stTextArea label {
         color: #333 !important;
     }
+    /* Fix sidebar text visibility */
+    .stSidebar {
+        background-color: #f8f9fa !important;
+    }
+    .stSidebar .stMarkdown, .stSidebar .stMarkdown p, .stSidebar .stMarkdown h1, 
+    .stSidebar .stMarkdown h2, .stSidebar .stMarkdown h3, .stSidebar .stMarkdown h4 {
+        color: #333 !important;
+    }
+    .stSidebar .stSelectbox label, .stSidebar .stTextInput label, 
+    .stSidebar .stTextArea label, .stSidebar .stButton button {
+        color: #333 !important;
+    }
+    .stSidebar .stSuccess, .stSidebar .stInfo, .stSidebar .stWarning {
+        color: #333 !important;
+    }
+    /* Fix trending badges in sidebar */
+    .stSidebar .trending-badge {
+        background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+        color: white !important;
+        padding: 0.3rem 0.8rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: bold;
+        display: inline-block;
+        margin: 0.2rem;
+    }
 </style>
 """, unsafe_allow_html=True)
 
