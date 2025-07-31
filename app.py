@@ -51,6 +51,9 @@ st.markdown("""
         text-align: center;
         box-shadow: 0 10px 40px rgba(0,0,0,0.15);
     }
+    .intro-section h2, .intro-section p, .intro-section ul, .intro-section li {
+        color: white !important;
+    }
     .feature-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -64,6 +67,10 @@ st.markdown("""
         box-shadow: 0 5px 20px rgba(0,0,0,0.1);
         text-align: center;
         transition: transform 0.3s ease;
+        color: #333 !important;
+    }
+    .feature-card h3, .feature-card p {
+        color: #333 !important;
     }
     .feature-card:hover {
         transform: translateY(-5px);
@@ -160,6 +167,20 @@ st.markdown("""
         border-radius: 20px;
         box-shadow: 0 10px 40px rgba(0,0,0,0.15);
         margin: 1rem 0;
+        color: #333 !important;
+    }
+    .account-form h3, .account-form p, .account-form label {
+        color: #333 !important;
+    }
+    /* Ensure all text in main content is readable */
+    .stApp .main .block-container {
+        color: #333 !important;
+    }
+    .stMarkdown, .stMarkdown p, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3, .stMarkdown h4 {
+        color: #333 !important;
+    }
+    .stSelectbox label, .stTextInput label, .stTextArea label {
+        color: #333 !important;
     }
 </style>
 """, unsafe_allow_html=True)
