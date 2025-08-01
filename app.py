@@ -1506,7 +1506,7 @@ def show_post_generator():
             )
             
             # Success message
-            st.info("🎉 Posts generated! Don't forget to save your favorites to your library.") "Topics", value=True, 
+            st.info("🎉 Posts generated! Don't forget to save your favorites to your library.") Topics", value=True, 
                                        help="Incorporate current LinkedIn trending topics")
     
     # Generate button
@@ -2234,4 +2234,3 @@ def expand_post_content(post, target_min, target_max):
 # Run the app
 if __name__ == "__main__":
     main()
-
