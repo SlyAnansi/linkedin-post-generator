@@ -32,6 +32,117 @@ st.set_page_config(
 USER_DB_FILE = "users.json"
 SESSION_TIMEOUT = 3600  # 1 hour
 
+# Custom CSS
+def render_css():
+    """Render custom CSS styles"""
+    st.markdown("""
+    <style>
+        .stApp {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        
+        .main-header {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: bold;
+            text-align: center;
+            background: linear-gradient(45deg, #0066cc, #004499);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+        }
+        
+        .post-preview {
+            background: white;
+            border: 1px solid #e1e5e9;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto;
+            position: relative;
+        }
+        
+        .preview-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #e1e5e9;
+        }
+        
+        .preview-avatar {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(45deg, #0066cc, #004499);
+            border-radius: 50%;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .engagement-actions {
+            display: flex;
+            justify-content: space-between;
+            padding: 1rem 0;
+            border-top: 1px solid #e1e5e9;
+            margin-top: 1rem;
+            color: #65676b;
+            font-size: 0.9rem;
+        }
+        
+        .word-count {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #42a5f5;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        
+        .feature-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            text-align: center;
+            transition: transform 0.2s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-4px);
+        }
+        
+        .trending-badge {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            display: inline-block;
+            margin: 0.25rem;
+        }
+        
+        .stButton > button {
+            width: 100%;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .stButton > button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+    </style>
+    """, unsafe_allow_html=True)
+
 
 class SessionManager:
     """Handle session state management"""
@@ -636,129 +747,613 @@ class PostGenerator:
         return post
 
 
-class UIComponents:
-    """UI components for the application"""
+def show_post_preview(post: str, user_name: str = "Your Name"):
+    """Display LinkedIn-style post preview"""
+    word_count = len(post.split())
     
-    @staticmethod
-    def render_css():
-        """Render custom CSS styles"""
-        st.markdown("""
-        <style>
-            .stApp {
-                background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            }
-            
-            .main-header {
-                font-size: clamp(2rem, 5vw, 3.5rem);
-                font-weight: bold;
-                text-align: center;
-                background: linear-gradient(45deg, #0066cc, #004499);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                margin-bottom: 1rem;
-            }
-            
-            .post-preview {
-                background: white;
-                border: 1px solid #e1e5e9;
-                border-radius: 12px;
-                padding: 1.5rem;
-                margin: 1rem 0;
-                box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto;
-            }
-            
-            .preview-header {
-                display: flex;
-                align-items: center;
-                margin-bottom: 1rem;
-                padding-bottom: 0.5rem;
-                border-bottom: 1px solid #e1e5e9;
-            }
-            
-            .preview-avatar {
-                width: 48px;
-                height: 48px;
-                background: linear-gradient(45deg, #0066cc, #004499);
-                border-radius: 50%;
-                margin-right: 12px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                color: white;
-                font-weight: bold;
-            }
-            
-            .engagement-actions {
-                display: flex;
-                justify-content: space-between;
-                padding: 1rem 0;
-                border-top: 1px solid #e1e5e9;
-                margin-top: 1rem;
-                color: #65676b;
-                font-size: 0.9rem;
-            }
-            
-            .word-count {
-                position: absolute;
-                top: 10px;
-                right: 10px;
-                background: #42a5f5;
-                color: white;
-                padding: 4px 8px;
-                border-radius: 12px;
-                font-size: 0.75rem;
-                font-weight: bold;
-            }
-            
-            .feature-card {
-                background: white;
-                padding: 2rem;
-                border-radius: 12px;
-                box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-                text-align: center;
-                transition: transform 0.2s ease;
-            }
-            
-            .feature-card:hover {
-                transform: translateY(-4px);
-            }
-            
-            .trending-badge {
-                background: linear-gradient(45deg, #ff6b6b, #ee5a52);
-                color: white;
-                padding: 0.25rem 0.75rem;
-                border-radius: 20px;
-                font-size: 0.8rem;
-                font-weight: 500;
-                display: inline-block;
-                margin: 0.25rem;
-            }
-            
-            .stButton > button {
-                width: 100%;
-                border-radius: 8px;
-                font-weight: 500;
-                transition: all 0.2s ease;
-            }
-            
-            .stButton > button:hover {
-                transform: translateY(-1px);
-                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            }
-        </style>
-        """, unsafe_allow_html=True)
+    # Escape HTML in post content and user_name to prevent injection
+    escaped_post = post.replace('<', '&lt;').replace('>', '&gt;')
+    escaped_user_name = user_name.replace('<', '&lt;').replace('>', '&gt;')
     
-    @staticmethod
-    def show_post_preview(post: str, user_name: str = "Your Name"):
-        """Display LinkedIn-style post preview"""
-        word_count = len(post.split())
+    st.markdown(f"""
+    <div class="post-preview">
+        <div class="preview-header">
+            <div class="preview-avatar">{escaped_user_name[0] if escaped_user_name else "U"}</div>
+            <div>
+                <div style="font-weight: bold; color: #1d2129;">{escaped_user_name}</div>
+                <div style="color: #65676b; font-size: 0.9rem;">Professional • Just now</div>
+            </div>
+        </div>
+        <div style="color: #1d2129; white-space: pre-line; line-height: 1.5; margin: 1rem 0;">{escaped_post}</div>
+        <div class="engagement-actions">
+            <span>👍 Like</span>
+            <span>💬 Comment</span>
+            <span>🔄 Repost</span>
+            <span>📤 Send</span>
+        </div>
+        <div class="word-count">{word_count} words</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+
+def generate_qr_code(url: str) -> Optional[str]:
+    """Generate QR code for URL"""
+    try:
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_M,
+            box_size=10,
+            border=4,
+        )
+        qr.add_data(url)
+        qr.make(fit=True)
         
-        st.markdown(f"""
-        <div class="post-preview">
-            <div class="preview-header">
-                <div class="preview-avatar">{user_name[0] if user_name else "U"}</div>
-                <div>
-                    <div style="font-weight: bold; color: #1d2129;">{user_name}</div>
-                    <div style="color: #65676b; font-size: 0.9rem;">Professional • Just now</div>
+        img = qr.make_image(fill_color="black", back_color="white")
+        buf = io.BytesIO()
+        img.save(buf, format='PNG')
+        buf.seek(0)
+        
+        return base64.b64encode(buf.getvalue()).decode()
+    except Exception as e:
+        st.error(f"QR Code generation failed: {e}")
+        return None
+
+
+class LinkedInPostApp:
+    """Main application class"""
+    
+    def __init__(self):
+        SessionManager.init_session_state()
+        render_css()
+    
+    def run(self):
+        """Main application entry point"""
+        st.markdown('<div class="main-header">🚀 LinkedIn Post Generator Pro</div>', unsafe_allow_html=True)
+        st.markdown('<div style="text-align: center; color: #666; margin-bottom: 2rem; font-size: 1.1rem;">Create engaging, professional LinkedIn content that drives real engagement</div>', unsafe_allow_html=True)
+        
+        if not st.session_state.logged_in:
+            self._show_auth_page()
+        else:
+            self._show_main_app()
+    
+    def _show_auth_page(self):
+        """Show authentication page"""
+        # Introduction section
+        st.markdown("""
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                    color: white; padding: 2rem; border-radius: 16px; text-align: center; margin: 2rem 0;">
+            <h2 style="color: white; margin-bottom: 1rem;">Built for Professionals Who Value Quality Content</h2>
+            <p style="color: white; font-size: 1.1rem; margin-bottom: 1.5rem;">
+                Stop posting generic LinkedIn content. This tool creates engaging posts that actually get noticed.
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Features showcase
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.markdown("""
+            <div class="feature-card">
+                <h3>🎯 Smart Templates</h3>
+                <p>8 proven post structures designed for maximum engagement</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown("""
+            <div class="feature-card">
+                <h3>📈 Trending Topics</h3>
+                <p>AI-powered integration of current industry trends</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            st.markdown("""
+            <div class="feature-card">
+                <h3>👀 Live Preview</h3>
+                <p>See exactly how your post looks before publishing</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Authentication tabs
+        tab1, tab2 = st.tabs(["🔑 Login", "🚀 Create Account"])
+        
+        with tab1:
+            self._show_login_form()
+        
+        with tab2:
+            self._show_signup_form()
+    
+    def _show_login_form(self):
+        """Show login form"""
+        st.markdown("### Welcome Back!")
+        
+        with st.form("login_form"):
+            email = st.text_input("Email", placeholder="your.email@company.com")
+            password = st.text_input("Password", type="password")
+            submit = st.form_submit_button("🔑 Login", type="primary", use_container_width=True)
+            
+            if submit:
+                if email and password:
+                    success, message = UserManager.login_user(email, password)
+                    if success:
+                        st.success(message)
+                        st.rerun()
+                    else:
+                        st.error(message)
+                else:
+                    st.error("Please fill in all fields")
+    
+    def _show_signup_form(self):
+        """Show signup form"""
+        st.markdown("### Join the Community")
+        st.markdown("**Create your free account - no credit card required**")
+        
+        with st.form("signup_form"):
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                name = st.text_input("Full Name*", placeholder="John Doe")
+                email = st.text_input("Email*", placeholder="your.email@company.com")
+            
+            with col2:
+                company = st.text_input("Company", placeholder="Your Company (optional)")
+                password = st.text_input("Password*", type="password", help="Minimum 6 characters")
+            
+            confirm_password = st.text_input("Confirm Password*", type="password")
+            agree_terms = st.checkbox("I agree to the Terms of Service and Privacy Policy")
+            
+            submit = st.form_submit_button("🚀 Create Free Account", type="primary", use_container_width=True)
+            
+            if submit:
+                if not all([name, email, password, confirm_password]):
+                    st.error("Please fill in all required fields")
+                elif len(password) < 6:
+                    st.error("Password must be at least 6 characters")
+                elif password != confirm_password:
+                    st.error("Passwords don't match")
+                elif not agree_terms:
+                    st.error("Please agree to the Terms of Service")
+                else:
+                    success, message = UserManager.create_account(email, password, name, company)
+                    if success:
+                        st.success(f"{message}! Please login to continue.")
+                        st.balloons()
+                    else:
+                        st.error(message)
+    
+    def _show_main_app(self):
+        """Show main application for logged-in users"""
+        # Sidebar
+        with st.sidebar:
+            user = st.session_state.user_data
+            st.markdown(f"### 👋 Welcome, {user.get('name', 'User')}!")
+            st.write(f"📧 {user.get('email', '')}")
+            if user.get('company'):
+                st.write(f"🏢 {user.get('company')}")
+            
+            if st.button("🚪 Logout", use_container_width=True):
+                self._logout()
+            
+            st.markdown("---")
+            
+            # Stats
+            st.markdown("### 📊 Your Stats")
+            col1, col2 = st.columns(2)
+            with col1:
+                st.metric("Posts Generated", st.session_state.usage_count)
+            with col2:
+                st.metric("Posts Saved", len(st.session_state.saved_posts))
+            
+            st.markdown("---")
+            
+            # Trending topics
+            st.markdown("### 🔥 Trending Now")
+            trending = TrendingTopics.get_trending_topics()
+            for topic in trending["general"][:3]:
+                st.markdown(f'<span class="trending-badge">{topic}</span>', unsafe_allow_html=True)
+            
+            st.markdown("---")
+            
+            # Navigation
+            page = st.selectbox(
+                "Navigate",
+                ["🎯 Generate Posts", "💾 Saved Posts", "⚙️ Settings", "📱 Mobile QR"],
+                key="nav_select"
+            )
+            
+            page_map = {
+                "🎯 Generate Posts": "generate",
+                "💾 Saved Posts": "saved", 
+                "⚙️ Settings": "settings",
+                "📱 Mobile QR": "qr"
+            }
+            st.session_state.current_page = page_map.get(page, "generate")
+        
+        # Main content
+        if st.session_state.current_page == "generate":
+            self._show_post_generator()
+        elif st.session_state.current_page == "saved":
+            self._show_saved_posts()
+        elif st.session_state.current_page == "settings":
+            self._show_settings()
+        elif st.session_state.current_page == "qr":
+            self._show_qr_code()
+    
+    def _show_post_generator(self):
+        """Show the main post generation interface"""
+        st.markdown("## 🎯 Generate Your LinkedIn Posts")
+        
+        # Input form
+        with st.container():
+            topic = st.text_input(
+                "💡 What topic do you want to write about?",
+                placeholder="e.g., AI in healthcare, Remote work tips, Leadership strategies...",
+                help="Be specific for better results"
+            )
+            
+            if not topic:
+                st.info("👆 Enter a topic above to get started!")
+                return
+        
+        # Configuration
+        with st.expander("⚙️ Post Configuration", expanded=True):
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                template = st.selectbox(
+                    "Post Template:",
+                    list(PostGenerator.TEMPLATES.keys()),
+                    help="Choose the structure that fits your content"
+                )
+                
+                industry = st.selectbox(
+                    "Industry:",
+                    ["Technology", "Healthcare", "Finance", "Marketing", "Sales", 
+                     "HR", "Education", "Consulting", "Manufacturing", "Other"],
+                    index=["Technology", "Healthcare", "Finance", "Marketing", "Sales", 
+                           "HR", "Education", "Consulting", "Manufacturing", "Other"].index(
+                               st.session_state.user_preferences.get('default_industry', 'Technology'))
+                )
+            
+            with col2:
+                tone = st.selectbox(
+                    "Tone:",
+                    ["Professional", "Conversational", "Inspirational", "Educational", 
+                     "Humorous", "Thought-provoking"],
+                    index=["Professional", "Conversational", "Inspirational", "Educational", 
+                           "Humorous", "Thought-provoking"].index(
+                               st.session_state.user_preferences.get('default_tone', 'Professional'))
+                )
+                
+                word_count = st.selectbox(
+                    "Post Length:",
+                    ["Short (50-100 words)", "Medium (100-200 words)", "Long (200-300 words)"],
+                    index=["Short (50-100 words)", "Medium (100-200 words)", "Long (200-300 words)"].index(
+                        st.session_state.user_preferences.get('default_length', 'Medium (100-200 words)'))
+                )
+            
+            col3, col4 = st.columns(2)
+            with col3:
+                include_emojis = st.checkbox("Include Emojis", value=True)
+            with col4:
+                use_trending = st.checkbox("Include Trending Topics", value=True)
+        
+        # Template info
+        template_info = PostGenerator.TEMPLATES[template]
+        st.info(f"**{template} Template:** {template_info['description']}\n\n"
+               f"**Structure:** {template_info['structure']}\n\n"
+               f"**Best for:** {template_info['best_for']}")
+        
+        # Generate button
+        if st.button("🚀 Generate Posts", type="primary", use_container_width=True):
+            with st.spinner("🤖 Creating your LinkedIn posts..."):
+                posts = PostGenerator.generate_posts(
+                    topic, industry, tone, template, word_count, include_emojis, use_trending
+                )
+                
+                st.session_state.usage_count += 1
+                UserManager.update_user_data()
+            
+            if posts:
+                st.success("✅ Posts generated successfully!")
+                
+                # Display posts
+                for i, post in enumerate(posts, 1):
+                    st.markdown(f"### 📝 Post Variation {i}")
+                    
+                    # Preview
+                    show_post_preview(post, st.session_state.user_data.get('name', 'Your Name'))
+                    
+                    # Engagement prediction
+                    engagement_score = self._predict_engagement(post, template, tone)
+                    color = "🟢" if engagement_score > 70 else "🟡" if engagement_score > 50 else "🔴"
+                    st.markdown(f"**Predicted Engagement:** {color} {engagement_score}/100")
+                    
+                    # Action buttons
+                    col1, col2, col3 = st.columns(3)
+                    
+                    with col1:
+                        if st.button(f"📋 Copy Post {i}", key=f"copy_{i}", use_container_width=True):
+                            st.success("✅ Post ready to copy from text area below!")
+                    
+                    with col2:
+                        if st.button(f"💾 Save Post {i}", key=f"save_{i}", use_container_width=True):
+                            saved_post = {
+                                'content': post,
+                                'saved_at': datetime.now().isoformat(),
+                                'topic': topic,
+                                'template': template,
+                                'word_count': len(post.split()),
+                                'preview': post[:100] + "..." if len(post) > 100 else post
+                            }
+                            st.session_state.saved_posts.append(saved_post)
+                            UserManager.update_user_data()
+                            st.success("💾 Post saved!")
+                    
+                    with col3:
+                        linkedin_url = f"https://www.linkedin.com/sharing/share-offsite/?url=https://linkedin-post-generator.com"
+                        st.markdown(f"[🔗 Share on LinkedIn]({linkedin_url})")
+                    
+                    # Text area for manual copying
+                    st.text_area(
+                        f"📝 Post {i} (click to select all):",
+                        value=post,
+                        height=150,
+                        key=f"post_text_{i}",
+                        help="Click here, then Ctrl+A (Cmd+A) to select all, Ctrl+C (Cmd+C) to copy"
+                    )
+                    
+                    st.markdown("---")
+                
+                # Download all posts
+                all_posts_text = "\n\n" + "="*50 + "\n\n".join([f"POST {i}:\n{post}" for i, post in enumerate(posts, 1)])
+                st.download_button(
+                    label="📥 Download All Posts as Text File",
+                    data=all_posts_text,
+                    file_name=f"linkedin_posts_{topic.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d')}.txt",
+                    mime="text/plain",
+                    use_container_width=True
+                )
+    
+    def _show_saved_posts(self):
+        """Show saved posts management"""
+        st.markdown("### 💾 Your Saved Posts")
+        
+        if not st.session_state.saved_posts:
+            st.info("📝 No saved posts yet. Generate and save posts to build your content library!")
+            return
+        
+        st.markdown(f"**Total saved:** {len(st.session_state.saved_posts)} posts")
+        
+        # Search functionality
+        search_term = st.text_input("🔍 Search saved posts", placeholder="Search by content or topic...")
+        
+        # Filter posts
+        filtered_posts = st.session_state.saved_posts
+        if search_term:
+            filtered_posts = [
+                post for post in st.session_state.saved_posts 
+                if search_term.lower() in post.get('content', '').lower() or 
+                   search_term.lower() in post.get('topic', '').lower()
+            ]
+        
+        if not filtered_posts:
+            st.warning("No posts match your search")
+            return
+        
+        # Display posts
+        for i, saved_post in enumerate(reversed(filtered_posts)):
+            with st.expander(
+                f"📝 {saved_post.get('topic', 'Post')} - {saved_post.get('saved_at', 'Unknown date')[:10]}", 
+                expanded=False
+            ):
+                # Metadata
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.metric("Words", saved_post.get('word_count', 'N/A'))
+                with col2:
+                    st.metric("Template", saved_post.get('template', 'Unknown'))
+                with col3:
+                    st.write(f"**Saved:** {saved_post.get('saved_at', 'Unknown')[:16]}")
+                
+                # Preview
+                st.markdown("**Preview:**")
+                st.markdown(f"*{saved_post.get('preview', saved_post.get('content', '')[:100] + '...')}*")
+                
+                # Full content
+                st.text_area(
+                    "Full Content:",
+                    value=saved_post.get('content', ''),
+                    height=150,
+                    key=f"saved_content_{i}",
+                    help="Click to select all and copy"
+                )
+                
+                # Actions
+                col1, col2, col3 = st.columns(3)
+                
+                with col1:
+                    if st.button(f"📋 Copy", key=f"copy_saved_{i}", use_container_width=True):
+                        st.success("✅ Ready to copy from text area above!")
+                
+                with col2:
+                    linkedin_url = f"https://www.linkedin.com/sharing/share-offsite/?url=https://linkedin-post-generator.com"
+                    st.markdown(f"[🔗 Share]({linkedin_url})")
+                
+                with col3:
+                    if st.button(f"🗑️ Delete", key=f"delete_saved_{i}", use_container_width=True):
+                        st.session_state.saved_posts.remove(saved_post)
+                        UserManager.update_user_data()
+                        st.success("🗑️ Post deleted!")
+                        st.rerun()
+    
+    def _show_settings(self):
+        """Show user settings and preferences"""
+        st.markdown("## ⚙️ Settings & Preferences")
+        
+        # Default preferences
+        with st.expander("🎯 Default Preferences", expanded=True):
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                default_industry = st.selectbox(
+                    "Default Industry:",
+                    ["Technology", "Healthcare", "Finance", "Marketing", "Sales", 
+                     "HR", "Education", "Consulting", "Manufacturing", "Other"],
+                    index=["Technology", "Healthcare", "Finance", "Marketing", "Sales", 
+                           "HR", "Education", "Consulting", "Manufacturing", "Other"].index(
+                               st.session_state.user_preferences.get('default_industry', 'Technology'))
+                )
+                
+                default_tone = st.selectbox(
+                    "Default Tone:",
+                    ["Professional", "Conversational", "Inspirational", "Educational", 
+                     "Humorous", "Thought-provoking"],
+                    index=["Professional", "Conversational", "Inspirational", "Educational", 
+                           "Humorous", "Thought-provoking"].index(
+                               st.session_state.user_preferences.get('default_tone', 'Professional'))
+                )
+            
+            with col2:
+                default_length = st.selectbox(
+                    "Default Post Length:",
+                    ["Short (50-100 words)", "Medium (100-200 words)", "Long (200-300 words)"],
+                    index=["Short (50-100 words)", "Medium (100-200 words)", "Long (200-300 words)"].index(
+                        st.session_state.user_preferences.get('default_length', 'Medium (100-200 words)'))
+                )
+            
+            if st.button("💾 Save Preferences", use_container_width=True):
+                st.session_state.user_preferences.update({
+                    'default_industry': default_industry,
+                    'default_tone': default_tone,
+                    'default_length': default_length
+                })
+                UserManager.update_user_data()
+                st.success("✅ Preferences saved!")
+        
+        # Account statistics
+        with st.expander("📊 Account Statistics", expanded=True):
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                st.metric("Posts Generated", st.session_state.usage_count)
+            with col2:
+                st.metric("Posts Saved", len(st.session_state.saved_posts))
+            with col3:
+                st.metric("Brand Examples", len(st.session_state.brand_voice_examples))
+            
+            if st.session_state.user_data:
+                st.markdown("---")
+                st.markdown("**Account Details:**")
+                user = st.session_state.user_data
+                st.write(f"📅 **Member since:** {user.get('created_at', 'Unknown')[:10]}")
+                st.write(f"🔑 **Last login:** {user.get('last_login', 'Unknown')[:10] if user.get('last_login') else 'First time'}")
+                st.write(f"🏢 **Company:** {user.get('company', 'Not specified')}")
+        
+        # Export data
+        with st.expander("💾 Export Your Data", expanded=False):
+            st.markdown("Download all your saved posts and preferences as JSON:")
+            
+            if st.button("📥 Export Data", use_container_width=True):
+                export_data = {
+                    'user_info': {
+                        'name': st.session_state.user_data.get('name'),
+                        'email': st.session_state.user_data.get('email'),
+                        'company': st.session_state.user_data.get('company')
+                    },
+                    'saved_posts': st.session_state.saved_posts,
+                    'preferences': st.session_state.user_preferences,
+                    'usage_stats': {
+                        'posts_generated': st.session_state.usage_count,
+                        'posts_saved': len(st.session_state.saved_posts)
+                    },
+                    'export_date': datetime.now().isoformat()
+                }
+                
+                export_json = json.dumps(export_data, indent=2)
+                st.download_button(
+                    label="📥 Download JSON File",
+                    data=export_json,
+                    file_name=f"linkedin_generator_data_{datetime.now().strftime('%Y%m%d')}.json",
+                    mime="application/json",
+                    use_container_width=True
+                )
+                st.success("✅ Data export ready!")
+    
+    def _show_qr_code(self):
+        """Show QR code for mobile access"""
+        st.markdown("### 📱 Mobile Access")
+        st.markdown("**Share this tool with mobile users:**")
+        
+        website_url = "https://linkedin-post-generator.streamlit.app"
+        
+        qr_base64 = generate_qr_code(website_url)
+        if qr_base64:
+            st.markdown(
+                f'''
+                <div style="text-align: center; padding: 20px;">
+                    <img src="data:image/png;base64,{qr_base64}" 
+                         style="max-width: 250px; width: 100%; height: auto; border: 2px solid #ccc; border-radius: 10px;">
                 </div>
+                ''',
+                unsafe_allow_html=True
+            )
+            st.markdown("*Point your phone camera at this code or use a QR scanner app*")
+        else:
+            st.error("Could not generate QR code")
+        
+        st.markdown(f"**Direct link:** {website_url}")
+        st.info("💡 Bookmark this page on your phone for easy access!")
+    
+    def _predict_engagement(self, post: str, template: str, tone: str) -> int:
+        """Predict engagement score for a post"""
+        score = 50  # Base score
+        
+        # Template scoring
+        template_scores = {
+            "Question": 15, "Opinion": 18, "Story": 12, "List": 10,
+            "Data": 8, "Tips": 8, "Achievement": 6, "Insight": 7
+        }
+        score += template_scores.get(template, 5)
+        
+        # Tone scoring
+        tone_scores = {
+            "Conversational": 10, "Humorous": 15, "Thought-provoking": 12,
+            "Inspirational": 8, "Educational": 6, "Professional": 4
+        }
+        score += tone_scores.get(tone, 3)
+        
+        # Content analysis
+        if "?" in post:
+            score += 8  # Questions drive engagement
+        if any(emoji in post for emoji in ["🤔", "💭", "🔥", "💡", "🚀"]):
+            score += 5  # Engaging emojis
+        if len(post.split()) < 150:
+            score += 5  # Shorter posts often perform better
+        
+        # Hashtag analysis
+        hashtag_count = post.count('#')
+        if 3 <= hashtag_count <= 5:
+            score += 5
+        elif hashtag_count > 7:
+            score -= 3
+        
+        return min(95, max(25, score))
+    
+    def _logout(self):
+        """Handle user logout"""
+        # Clear session state
+        for key in list(st.session_state.keys()):
+            if key not in ['current_page']:
+                del st.session_state[key]
+        
+        SessionManager.init_session_state()
+        st.rerun()
+
+
+# Main execution
+if __name__ == "__main__":
+    app = LinkedInPostApp()
+    app.run()
