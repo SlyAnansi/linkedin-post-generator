@@ -1,10 +1,21 @@
-questions = [
+def create_question_post(topic, industry, tone, trending_topic, emojis, include_emojis, word_count):
+    emoji = random.choice(emojis) if include_emojis else ""
+    
+    contexts = [
+        f"Quick question for {industry} professionals:",
+        f"Honest question about {topic}:",
+        f"Help me settle a debate:"
+    ]
+    
+    context = random.choice(contexts)
+    
+    questions = [
         f"Is {topic} overhyped or underutilized in {industry}?",
         f"What's the biggest {topic} misconception in our industry?",
         f"If you could change one thing about {topic} adoption, what would it be?"
     ]
     
- question = random.choice(questions)
+    question = random.choice(questions)
     take = f"My take: Most companies focus on the tech, but success comes from change management."
     
     if trending_topic:
@@ -1795,4 +1806,3 @@ def create_question_post(topic, industry, tone, trending_topic, emojis, include_
     context = random.choice(contexts)
     
     questions
-
