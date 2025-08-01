@@ -1450,8 +1450,11 @@ def show_post_generator():
         with col3:
             include_emojis = st.checkbox("Include Emojis", value=True)
         with col4:
-            trending_focus = st.checkbox("Focus on Trending Topics", value=True, 
-                                       help="Incorporate current LinkedIn trending topics")
+            trending_focus = st.checkbox(
+                "Focus on Trending Topics", 
+                value=True, 
+                help="Incorporate current LinkedIn trending topics"
+            )
     
     # Generate button
     if st.button("🚀 Generate Posts", type="primary", use_container_width=True):
