@@ -1,4 +1,22 @@
+hashtags = f"#{industry.replace(' ', '')} #{topic.replace(' ', '')} #Tips #BestPractices"
+    
+    post = f"""{problem}
+
+{solution}
+
+{chr(10).join(tips)}
+
+{outcome}
+
+{cta}
+
+{hashtags}"""
+    
+    return adjust_word_count(post, word_count)
+
+
 def create_question_post(topic, industry, tone, trending_topic, emojis, include_emojis, word_count):
+    """Create a question-style post."""
     emoji = random.choice(emojis) if include_emojis else ""
     
     contexts = [
@@ -39,7 +57,9 @@ def create_question_post(topic, industry, tone, trending_topic, emojis, include_
     
     return adjust_word_count(post, word_count)
 
+
 def create_data_post(topic, industry, tone, trending_topic, emojis, include_emojis, word_count):
+    """Create a data-driven post."""
     emoji = random.choice(emojis) if include_emojis else ""
     
     stats = [
@@ -75,7 +95,9 @@ def create_data_post(topic, industry, tone, trending_topic, emojis, include_emoj
     
     return adjust_word_count(post, word_count)
 
+
 def create_controversial_post(topic, industry, tone, trending_topic, emojis, include_emojis, word_count):
+    """Create a controversial opinion post."""
     emoji = random.choice(emojis) if include_emojis else ""
     
     controversial_statements = [
@@ -109,7 +131,9 @@ def create_controversial_post(topic, industry, tone, trending_topic, emojis, inc
     
     return adjust_word_count(post, word_count)
 
+
 def create_achievement_post(topic, industry, tone, trending_topic, emojis, include_emojis, word_count):
+    """Create an achievement celebration post."""
     emoji = random.choice(emojis) if include_emojis else ""
     
     achievements = [
@@ -147,7 +171,9 @@ def create_achievement_post(topic, industry, tone, trending_topic, emojis, inclu
     
     return adjust_word_count(post, word_count)
 
+
 def create_list_post(topic, industry, tone, trending_topic, emojis, include_emojis, word_count):
+    """Create a list-style post."""
     emoji = random.choice(emojis) if include_emojis else ""
     
     setup = f"5 things I wish I knew about {topic} when starting in {industry}:"
@@ -181,7 +207,9 @@ def create_list_post(topic, industry, tone, trending_topic, emojis, include_emoj
     
     return adjust_word_count(post, word_count)
 
+
 def adjust_word_count(post, target_word_count):
+    """Adjust post length based on target word count."""
     words = post.split()
     current_count = len(words)
     
@@ -212,7 +240,9 @@ def adjust_word_count(post, target_word_count):
     
     return post
 
+
 def expand_post_content(post, target_min, target_max):
+    """Expand post content to meet word count requirements."""
     lines = post.split('\n')
     hashtag_lines = [line for line in lines if '#' in line]
     content_lines = [line for line in lines if '#' not in line and line.strip()]
@@ -270,10 +300,14 @@ def expand_post_content(post, target_min, target_max):
     
     return final_content
 
+
 def get_word_count(text):
+    """Get word count of text."""
     return len(text.split())
 
+
 def predict_engagement(post, template, tone, industry):
+    """Predict engagement level based on post characteristics."""
     score = 50
     
     template_scores = {
@@ -303,7 +337,9 @@ def predict_engagement(post, template, tone, industry):
     
     return min(95, max(25, score))
 
+
 def show_post_preview(post, user_name="Your Name"):
+    """Show LinkedIn-style preview with mobile optimization."""
     word_count = get_word_count(post)
     
     st.markdown(f"""
@@ -327,7 +363,9 @@ def show_post_preview(post, user_name="Your Name"):
     
     st.markdown(f'<div class="word-count-badge">{word_count} words</div>', unsafe_allow_html=True)
 
+
 def show_copy_functionality(post, post_id):
+    """Enhanced copy functionality with multiple options and mobile optimization."""
     col1, col2, col3 = st.columns([2, 1, 1])
     
     with col1:
@@ -371,7 +409,9 @@ def show_copy_functionality(post, post_id):
         help="Tap here, then select all (Ctrl+A/Cmd+A) and copy (Ctrl+C/Cmd+C)"
     )
 
+
 def show_qr_code():
+    """Display QR code for mobile access."""
     website_url = "https://linkedin-post-generator-ao8jqjdjy8tdsawokcarj4.streamlit.app"
     
     st.markdown('<div class="qr-container">', unsafe_allow_html=True)
@@ -402,7 +442,9 @@ def show_qr_code():
     
     st.markdown('</div>', unsafe_allow_html=True)
 
+
 def show_login_signup():
+    """Enhanced login/signup with better UX and security."""
     show_qr_code()
     
     st.markdown('<div class="intro-section">', unsafe_allow_html=True)
@@ -540,7 +582,9 @@ def show_login_signup():
                         st.error(message)
         st.markdown('</div>', unsafe_allow_html=True)
 
+
 def show_trending_topics_sidebar():
+    """Show current trending topics in sidebar."""
     st.markdown("### 🔥 Trending Now")
     trending = get_current_trending_topics()
     
@@ -555,7 +599,9 @@ def show_trending_topics_sidebar():
             for topic in trending[user_industry][:2]:
                 st.markdown(f'<span class="trending-badge">{topic}</span>', unsafe_allow_html=True)
 
+
 def show_saved_posts():
+    """Enhanced saved posts display with better metadata."""
     if not st.session_state.saved_posts:
         st.info("📝 No saved posts yet. Save posts from the generator to build your library!")
         return
@@ -578,8 +624,6 @@ def show_saved_posts():
         return
     
     for i, saved_post in enumerate(reversed(filtered_posts)):
-        post_index = len(filtered_posts) - i
-        
         with st.expander(
             f"📝 {saved_post.get('topic', 'Post')} - {saved_post.get('saved_at', 'Unknown date')}", 
             expanded=False
@@ -626,7 +670,9 @@ def show_saved_posts():
                     st.success("🗑️ Post deleted!")
                     st.rerun()
 
+
 def show_post_generator():
+    """Main post generation interface with mobile optimization."""
     st.markdown("## 🎯 Generate Your LinkedIn Posts")
     
     with st.container():
@@ -748,7 +794,9 @@ def show_post_generator():
             
             st.info("🎉 Posts generated! Don't forget to save your favorites to your library.")
 
+
 def show_preferences():
+    """User preferences and settings with mobile optimization."""
     st.markdown("## ⚙️ Preferences & Settings")
     
     with st.expander("🎯 Default Settings", expanded=True):
@@ -864,24 +912,32 @@ def show_preferences():
             )
             st.success("✅ Data exported successfully!")
 
+
 def main():
+    """Main application function."""
     init_session_state()
     
+    # Header
     st.markdown('<div class="main-header">🚀 LinkedIn Post Generator</div>', unsafe_allow_html=True)
     st.markdown('<div class="sub-header">Create engaging, AI-powered LinkedIn content that drives real engagement</div>', unsafe_allow_html=True)
     
+    # Check if user is logged in
     if not st.session_state.logged_in:
         show_login_signup()
         return
     
+    # Main app for logged-in users
     user = st.session_state.user_data
     
+    # Sidebar (desktop) or mobile navigation
     with st.sidebar:
+        # User info
         st.markdown(f"### 👋 Welcome, {user.get('name', 'User')}!")
         st.write(f"📧 {user.get('email', '')}")
         st.write(f"🏢 {user.get('company', 'N/A')}")
         
         if st.button("🚪 Logout", use_container_width=True):
+            # Clear session state
             for key in list(st.session_state.keys()):
                 if key not in ['current_page', 'show_mobile_nav']:
                     del st.session_state[key]
@@ -890,19 +946,23 @@ def main():
         
         st.markdown("---")
         
+        # Usage stats (now unlimited)
         st.success("⭐ Unlimited Access - No Limits!")
         st.info(f"📊 Posts Generated: {st.session_state.usage_count}")
         st.info(f"💾 Posts Saved: {len(st.session_state.saved_posts)}")
         
         st.markdown("---")
         
+        # Trending topics
         show_trending_topics_sidebar()
         
         st.markdown("---")
         
+        # Navigation
         page_options = ["🎯 Generate Posts", "💾 Saved Posts", "⚙️ Preferences", "📱 QR Code"]
         page = st.selectbox("🧭 Navigate", page_options)
         
+        # Update current page for mobile nav
         page_mapping = {
             "🎯 Generate Posts": "generate",
             "💾 Saved Posts": "saved", 
@@ -911,6 +971,7 @@ def main():
         }
         st.session_state.current_page = page_mapping.get(page, "generate")
     
+    # Main content based on navigation
     current_page = st.session_state.get('current_page', 'generate')
     
     if current_page == 'generate' or page == "🎯 Generate Posts":
@@ -922,6 +983,7 @@ def main():
     else:
         show_preferences()
     
+    # Enhanced mobile navigation using Streamlit columns
     if st.session_state.get('show_mobile_nav', True) and st.session_state.logged_in:
         st.markdown("---")
         st.markdown("#### 📱 Quick Navigation")
@@ -948,24 +1010,37 @@ def main():
                 st.session_state.current_page = 'qr'
                 st.rerun()
 
+
+# Run the application
 if __name__ == "__main__":
-    main()import streamlit as st
-import requests
+    main()#!/usr/bin/env python3
+"""
+LinkedIn Post Generator - Enhanced Version
+Built by a Software Engineer for creating engaging LinkedIn content
+"""
+
+# Standard library imports
+import hashlib
+import io
 import json
 import os
 import random
-import hashlib
-import time
 import re
-import io
-import base64
+import time
 from datetime import datetime, timedelta
+
+# Third-party imports
+import base64
+import pyperclip
+import qrcode
+import streamlit as st
 from dotenv import load_dotenv
+from PIL import Image
 
 # Load environment variables
 load_dotenv()
 
-# Page config
+# Page configuration
 st.set_page_config(
     page_title="LinkedIn Post Generator - Built by Engineer",
     page_icon="🚀",
@@ -1268,8 +1343,13 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Initialize session state
+
+# Constants
+USER_DB_FILE = "users.json"
+
+
 def init_session_state():
+    """Initialize session state with default values."""
     defaults = {
         'logged_in': False,
         'user_data': {},
@@ -1293,16 +1373,14 @@ def init_session_state():
         if key not in st.session_state:
             st.session_state[key] = value
 
-# Enhanced email validation
+
 def validate_email_address(email):
+    """Validate email address format and check for disposable domains."""
     try:
-        import re
-        # Basic email validation
         pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
         if not re.match(pattern, email):
             return False, "Please enter a valid email address"
         
-        # Check for disposable domains
         disposable_domains = [
             '10minutemail.com', 'guerrillamail.com', 'mailinator.com',
             'tempmail.org', 'throwaway.email', 'yopmail.com'
@@ -1313,11 +1391,12 @@ def validate_email_address(email):
             return False, "Disposable email addresses are not allowed"
         
         return True, email
-    except:
+    except Exception:
         return False, "Please enter a valid email address"
 
-# Enhanced bot detection
+
 def check_bot_behavior():
+    """Simple bot detection based on behavior patterns."""
     current_time = datetime.now()
     
     if 'last_request_time' in st.session_state:
@@ -1337,7 +1416,9 @@ def check_bot_behavior():
     
     return True, "Human verified"
 
+
 def simple_captcha():
+    """Simple math captcha for bot detection."""
     if 'captcha_answer' not in st.session_state:
         num1 = random.randint(1, 10)
         num2 = random.randint(1, 10)
@@ -1361,11 +1442,10 @@ def simple_captcha():
     
     return False
 
-# QR Code generation
+
 def generate_qr_code(url):
+    """Generate QR code for the website URL."""
     try:
-        import qrcode
-        
         qr = qrcode.QRCode(
             version=1,
             error_correction=qrcode.constants.ERROR_CORRECT_M,
@@ -1391,30 +1471,35 @@ def generate_qr_code(url):
         st.error(f"QR Code generation failed: {e}")
         return None
 
-# User database management
-USER_DB_FILE = "users.json"
 
 def load_users():
+    """Load users from JSON file."""
     try:
         if os.path.exists(USER_DB_FILE):
             with open(USER_DB_FILE, 'r') as f:
                 return json.load(f)
-    except:
+    except Exception:
         pass
     return {}
 
+
 def save_users(users):
+    """Save users to JSON file."""
     try:
         with open(USER_DB_FILE, 'w') as f:
             json.dump(users, f, indent=2)
         return True
-    except:
+    except Exception:
         return False
 
+
 def hash_password(password):
+    """Hash password using SHA256."""
     return hashlib.sha256(password.encode()).hexdigest()
 
+
 def create_account(email, password, name, company):
+    """Create a new user account."""
     users = load_users()
     
     if email in users:
@@ -1445,7 +1530,9 @@ def create_account(email, password, name, company):
         return True, "Account created successfully"
     return False, "Error creating account"
 
+
 def login_user(email, password):
+    """Login user with bot detection."""
     is_human, message = check_bot_behavior()
     if not is_human:
         return False, message
@@ -1485,7 +1572,9 @@ def login_user(email, password):
     
     return True, "Login successful"
 
+
 def update_user_data():
+    """Update user data in database."""
     if st.session_state.logged_in:
         users = load_users()
         email = st.session_state.user_data['email']
@@ -1497,19 +1586,20 @@ def update_user_data():
         })
         save_users(users)
 
-# Enhanced clipboard functionality
+
 def copy_to_clipboard(text, post_id):
+    """Enhanced clipboard functionality."""
     try:
-        import pyperclip
         pyperclip.copy(text)
         st.session_state[f'copied_{post_id}'] = True
         return True, "Copied to clipboard!"
-    except:
+    except Exception:
         st.session_state[f'copy_text_{post_id}'] = text
         return False, "Click the text area below and copy manually (Ctrl+A, Ctrl+C)"
 
-# Enhanced trending topics
+
 def get_current_trending_topics():
+    """Get current trending topics with timestamp-based rotation."""
     day_of_year = datetime.now().timetuple().tm_yday
     
     all_trending = {
@@ -1599,8 +1689,9 @@ def get_current_trending_topics():
     
     return selected_topics
 
-# Post templates
+
 def get_post_templates():
+    """Get available post templates with descriptions."""
     return {
         "Story": {
             "description": "Personal experience or anecdote",
@@ -1644,8 +1735,9 @@ def get_post_templates():
         }
     }
 
-# Post generation functions
+
 def generate_enhanced_posts(topic, industry, tone, audience, template, word_count, include_emojis, trending_focus):
+    """Generate posts with all new features."""
     trending_topics = get_current_trending_topics()
     industry_trends = trending_topics.get(industry, trending_topics["general"])
     selected_trend = random.choice(industry_trends) if trending_focus else None
@@ -1664,7 +1756,9 @@ def generate_enhanced_posts(topic, industry, tone, audience, template, word_coun
     
     return posts
 
+
 def create_structured_post(topic, industry, tone, audience, template, template_info, word_count, include_emojis, trending_topic, variation):
+    """Create a post following the selected template structure."""
     emoji_sets = {
         "Professional": ["📊", "💼", "🎯", "📈", "⭐"],
         "Conversational": ["💬", "🤔", "👥", "💡", "🚀"],
@@ -1696,7 +1790,9 @@ def create_structured_post(topic, industry, tone, audience, template, template_i
     
     return post
 
+
 def create_story_post(topic, industry, tone, trending_topic, emojis, include_emojis, word_count):
+    """Create a story-style post."""
     emoji = random.choice(emojis) if include_emojis else ""
     
     story_hooks = [
@@ -1730,7 +1826,9 @@ def create_story_post(topic, industry, tone, trending_topic, emojis, include_emo
     
     return adjust_word_count(post, word_count)
 
+
 def create_insight_post(topic, industry, tone, trending_topic, emojis, include_emojis, word_count):
+    """Create an insight-style post."""
     emoji = random.choice(emojis) if include_emojis else ""
     
     insights = [
@@ -1763,7 +1861,9 @@ def create_insight_post(topic, industry, tone, trending_topic, emojis, include_e
     
     return adjust_word_count(post, word_count)
 
+
 def create_tip_post(topic, industry, tone, trending_topic, emojis, include_emojis, word_count):
+    """Create a tip-style post."""
     emoji = random.choice(emojis) if include_emojis else ""
     
     problem = f"Struggling with {topic} implementation in {industry}?"
@@ -1778,31 +1878,4 @@ def create_tip_post(topic, industry, tone, trending_topic, emojis, include_emoji
     outcome = f"Result: Smoother {topic} integration and better ROI."
     cta = f"What tips would you add? {emoji if include_emojis else ''}"
     
-    hashtags = f"#{industry.replace(' ', '')} #{topic.replace(' ', '')} #Tips #BestPractices"
-    
-    post = f"""{problem}
-
-{solution}
-
-{chr(10).join(tips)}
-
-{outcome}
-
-{cta}
-
-{hashtags}"""
-    
-    return adjust_word_count(post, word_count)
-
-def create_question_post(topic, industry, tone, trending_topic, emojis, include_emojis, word_count):
-    emoji = random.choice(emojis) if include_emojis else ""
-    
-    contexts = [
-        f"Quick question for {industry} professionals:",
-        f"Honest question about {topic}:",
-        f"Help me settle a debate:"
-    ]
-    
-    context = random.choice(contexts)
-    
-    questions
+    hashtags = f"#{industry.replace(' ', '')} #{topic.replace(' ', '')} #Tips #BestP
