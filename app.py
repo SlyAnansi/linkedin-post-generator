@@ -38,28 +38,70 @@ def render_css():
     st.markdown("""
     <style>
         .stApp {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background: #8B8B8B !important;
+            color: #1a1a1a !important;
+        }
+        
+        .main .block-container {
+            background: transparent !important;
+            color: #1a1a1a !important;
         }
         
         .main-header {
             font-size: clamp(2rem, 5vw, 3.5rem);
             font-weight: bold;
             text-align: center;
-            background: linear-gradient(45deg, #0066cc, #004499);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: #1a1a1a !important;
+            text-shadow: 2px 2px 4px rgba(255,255,255,0.3);
             margin-bottom: 1rem;
+        }
+        
+        /* Override Streamlit default text colors */
+        .stMarkdown, .stMarkdown p, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3, .stMarkdown h4, .stMarkdown h5, .stMarkdown h6 {
+            color: #1a1a1a !important;
+        }
+        
+        .stText, p, h1, h2, h3, h4, h5, h6, span, div {
+            color: #1a1a1a !important;
+        }
+        
+        /* Form elements */
+        .stTextInput label, .stSelectbox label, .stTextArea label, .stCheckbox label {
+            color: #1a1a1a !important;
+            font-weight: 600 !important;
+        }
+        
+        .stTextInput input, .stSelectbox select, .stTextArea textarea {
+            background-color: white !important;
+            color: #1a1a1a !important;
+            border: 1px solid #ccc !important;
+        }
+        
+        /* Sidebar styling */
+        .stSidebar {
+            background-color: #A8A8A8 !important;
+        }
+        
+        .stSidebar .stMarkdown, .stSidebar .stMarkdown p, .stSidebar .stMarkdown h1, 
+        .stSidebar .stMarkdown h2, .stSidebar .stMarkdown h3, .stSidebar .stMarkdown h4 {
+            color: #1a1a1a !important;
+        }
+        
+        .stSidebar .stSelectbox label, .stSidebar .stTextInput label, 
+        .stSidebar .stTextArea label, .stSidebar .stButton button {
+            color: #1a1a1a !important;
         }
         
         .post-preview {
             background: white;
-            border: 1px solid #e1e5e9;
+            border: 2px solid #666;
             border-radius: 12px;
             padding: 1.5rem;
             margin: 1rem 0;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto;
             position: relative;
+            color: #1a1a1a !important;
         }
         
         .preview-header {
@@ -109,9 +151,15 @@ def render_css():
             background: white;
             padding: 2rem;
             border-radius: 12px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
             text-align: center;
             transition: transform 0.2s ease;
+            color: #1a1a1a !important;
+            border: 1px solid #ccc;
+        }
+        
+        .feature-card h3, .feature-card p {
+            color: #1a1a1a !important;
         }
         
         .feature-card:hover {
@@ -120,7 +168,7 @@ def render_css():
         
         .trending-badge {
             background: linear-gradient(45deg, #ff6b6b, #ee5a52);
-            color: white;
+            color: white !important;
             padding: 0.25rem 0.75rem;
             border-radius: 20px;
             font-size: 0.8rem;
@@ -134,11 +182,87 @@ def render_css():
             border-radius: 8px;
             font-weight: 500;
             transition: all 0.2s ease;
+            color: #1a1a1a !important;
+            background-color: white !important;
+            border: 1px solid #ccc !important;
         }
         
         .stButton > button:hover {
             transform: translateY(-1px);
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            background-color: #f0f0f0 !important;
+        }
+        
+        /* Primary button styling */
+        .stButton > button[kind="primary"] {
+            background-color: #0066cc !important;
+            color: white !important;
+            border: none !important;
+        }
+        
+        .stButton > button[kind="primary"]:hover {
+            background-color: #004499 !important;
+            color: white !important;
+        }
+        
+        /* Info boxes */
+        .stInfo {
+            background-color: rgba(255, 255, 255, 0.9) !important;
+            color: #1a1a1a !important;
+        }
+        
+        .stSuccess {
+            background-color: rgba(255, 255, 255, 0.9) !important;
+            color: #1a1a1a !important;
+        }
+        
+        .stWarning {
+            background-color: rgba(255, 255, 255, 0.9) !important;
+            color: #1a1a1a !important;
+        }
+        
+        .stError {
+            background-color: rgba(255, 255, 255, 0.9) !important;
+            color: #1a1a1a !important;
+        }
+        
+        /* Tabs */
+        .stTabs [data-baseweb="tab-list"] {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .stTabs [data-baseweb="tab"] {
+            color: #1a1a1a !important;
+            font-weight: 600;
+        }
+        
+        /* Expander */
+        .streamlit-expanderHeader {
+            color: #1a1a1a !important;
+            font-weight: 600;
+        }
+        
+        /* Metrics */
+        .metric-container {
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+        
+        [data-testid="metric-container"] {
+            background-color: rgba(255, 255, 255, 0.9) !important;
+            border: 1px solid #ccc !important;
+            padding: 1rem !important;
+            border-radius: 8px !important;
+        }
+        
+        [data-testid="metric-container"] label {
+            color: #1a1a1a !important;
+        }
+        
+        [data-testid="metric-container"] [data-testid="metric-value"] {
+            color: #1a1a1a !important;
         }
     </style>
     """, unsafe_allow_html=True)
