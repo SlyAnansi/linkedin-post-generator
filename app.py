@@ -4,7 +4,7 @@ questions = [
         f"If you could change one thing about {topic} adoption, what would it be?"
     ]
     
-    question = random.choice(questions)
+ question = random.choice(questions)
     take = f"My take: Most companies focus on the tech, but success comes from change management."
     
     if trending_topic:
@@ -1795,3 +1795,4 @@ def create_question_post(topic, industry, tone, trending_topic, emojis, include_
     context = random.choice(contexts)
     
     questions
+
