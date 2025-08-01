@@ -989,39 +989,10 @@ def show_qr_code():
     st.markdown('</div>', unsafe_allow_html=True)
 
 def show_mobile_navigation():
-    """Show mobile bottom navigation"""
-    if st.session_state.get('show_mobile_nav', True):
-        current_page = st.session_state.get('current_page', 'generate')
-        
-        nav_items = [
-            ('🎯', 'generate', 'Generate'),
-            ('💾', 'saved', 'Saved'),
-            ('⚙️', 'preferences', 'Settings'),
-            ('📱', 'qr', 'QR Code')
-        ]
-        
-        nav_html = '<div class="mobile-nav">'
-        for icon, page_key, label in nav_items:
-            active_class = 'active' if current_page == page_key else ''
-            nav_html += f'''
-                <div class="mobile-nav-item {active_class}" onclick="selectPage('{page_key}')">
-                    <div>{icon}</div>
-                    <div style="font-size: 0.7rem;">{label}</div>
-                </div>
-            '''
-        nav_html += '</div>'
-        
-        # Add JavaScript for navigation
-        nav_html += '''
-        <script>
-        function selectPage(page) {
-            // This would ideally interact with Streamlit's state
-            console.log('Selected page:', page);
-        }
-        </script>
-        '''
-        
-        st.markdown(nav_html, unsafe_allow_html=True)
+    """Show mobile bottom navigation - Simplified for Streamlit compatibility"""
+    # Remove the problematic HTML navigation for now
+    # Streamlit doesn't handle complex interactive HTML well
+    pass
 
 def show_pwa_install_prompt():
     """Show Progressive Web App install prompt"""
@@ -1360,18 +1331,44 @@ def main():
         }
         st.session_state.current_page = page_mapping.get(page, "generate")
     
-    # Main content based on navigation
-    if page == "🎯 Generate Posts":
+    # Main content based on navigation (updated to use session state)
+    current_page = st.session_state.get('current_page', 'generate')
+    
+    if current_page == 'generate' or page == "🎯 Generate Posts":
         show_post_generator()
-    elif page == "💾 Saved Posts":
+    elif current_page == 'saved' or page == "💾 Saved Posts":
         show_saved_posts()
-    elif page == "📱 QR Code":
+    elif current_page == 'qr' or page == "📱 QR Code":
         show_qr_code()
     else:
         show_preferences()
     
-    # Mobile navigation
-    show_mobile_navigation()
+    # Enhanced mobile navigation using Streamlit columns (works better than HTML)
+    if st.session_state.get('show_mobile_nav', True) and st.session_state.logged_in:
+        st.markdown("---")
+        st.markdown("#### 📱 Quick Navigation")
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            if st.button("🎯\nGenerate", key="mobile_nav_generate", use_container_width=True):
+                st.session_state.current_page = 'generate'
+                st.rerun()
+        
+        with col2:
+            if st.button("💾\nSaved", key="mobile_nav_saved", use_container_width=True):
+                st.session_state.current_page = 'saved'
+                st.rerun()
+        
+        with col3:
+            if st.button("⚙️\nSettings", key="mobile_nav_settings", use_container_width=True):
+                st.session_state.current_page = 'preferences'
+                st.rerun()
+        
+        with col4:
+            if st.button("📱\nQR Code", key="mobile_nav_qr", use_container_width=True):
+                st.session_state.current_page = 'qr'
+                st.rerun()
 
 def show_post_generator():
     """Main post generation interface with mobile optimization"""
@@ -1454,6 +1451,154 @@ def show_post_generator():
             include_emojis = st.checkbox("Include Emojis", value=True)
         with col4:
             trending_focus = st.checkbox("Focus on Trending Topics", value=True, 
+                                       help="Incorporate current LinkedIn trending topics")
+    
+    # Generate button
+    if st.button("🚀 Generate Posts", type="primary", use_container_width=True):
+        if not topic:
+            st.warning("Please enter a topic to generate posts about.")
+            return
+        
+        # Show loading with mobile-friendly spinner
+        with st.spinner("🤖 AI is crafting your LinkedIn posts..."):
+            time.sleep(1)  # Brief pause for better UX
+            
+            # Generate posts using the complete function
+            posts = generate_enhanced_posts(
+                topic, industry, tone, audience, template, 
+                word_count, include_emojis, trending_focus
+            )
+            
+            # Update usage count
+            st.session_state.usage_count += 1
+            update_user_data()
+        
+        if posts:
+            st.success("✅ Posts generated successfully!")
+            
+            st.markdown("## 📱 Your Generated Posts")
+            
+            # Show all posts
+            for i, post in enumerate(posts, 1):
+                st.markdown(f"### 📝 Post {i}")
+                
+                # Show preview
+                show_post_preview(post, st.session_state.user_data.get('name', 'Your Name'))
+                
+                # Engagement prediction
+                engagement_score = predict_engagement(post, template, tone, industry)
+                engagement_color = "🟢" if engagement_score > 70 else "🟡" if engagement_score > 50 else "🔴"
+                st.markdown(f"**Predicted Engagement:** {engagement_color} {engagement_score}/100")
+                
+                # Copy functionality
+                show_copy_functionality(post, i)
+                
+                st.markdown("---")
+            
+            # Download all posts
+            all_posts_text = "\n\n" + "="*50 + "\n\n".join([f"POST {i+1}:\n{post}" for i, post in enumerate(posts)])
+            st.download_button(
+                label="📥 Download All Posts",
+                data=all_posts_text,
+                file_name=f"linkedin_posts_{topic.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d')}.txt",
+                mime="text/plain",
+                use_container_width=True
+            )
+            
+            # Success message
+            st.info("🎉 Posts generated! Don't forget to save your favorites to your library.") Topics", value=True, 
+                                       help="Incorporate current LinkedIn trending topics")
+    
+    # Generate button
+    if st.button("🚀 Generate Posts", type="primary", use_container_width=True):
+        if not topic:
+            st.warning("Please enter a topic to generate posts about.")
+            return
+        
+        # Show loading with mobile-friendly spinner
+        with st.spinner("🤖 AI is crafting your LinkedIn posts..."):
+            time.sleep(1)  # Brief pause for better UX
+            
+            # Generate posts using the complete function
+            posts = generate_enhanced_posts(
+                topic, industry, tone, audience, template, 
+                word_count, include_emojis, trending_focus
+            )
+            
+            # Update usage count
+            st.session_state.usage_count += 1
+            update_user_data()
+        
+        if posts:
+            st.success("✅ Posts generated successfully!")
+            
+            st.markdown("## 📱 Your Generated Posts")
+            
+            # Show all posts
+            for i, post in enumerate(posts, 1):
+                st.markdown(f"### 📝 Post {i}")
+                
+                # Show preview
+                show_post_preview(post, st.session_state.user_data.get('name', 'Your Name'))
+                
+                # Engagement prediction
+                engagement_score = predict_engagement(post, template, tone, industry)
+                engagement_color = "🟢" if engagement_score > 70 else "🟡" if engagement_score > 50 else "🔴"
+                st.markdown(f"**Predicted Engagement:** {engagement_color} {engagement_score}/100")
+                
+                # Copy functionality
+                show_copy_functionality(post, i)
+                
+                st.markdown("---")
+            
+            # Download all posts
+            all_posts_text = "\n\n" + "="*50 + "\n\n".join([f"POST {i+1}:\n{post}" for i, post in enumerate(posts)])
+            st.download_button(
+                label="📥 Download All Posts",
+                data=all_posts_text,
+                file_name=f"linkedin_posts_{topic.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d')}.txt",
+                mime="text/plain",
+                use_container_width=True
+            )
+            
+            # Success message
+            st.info("🎉 Posts generated! Don't forget to save your favorites to your library.")
+
+def predict_engagement(post, template, tone, industry):
+    """Predict engagement level based on post characteristics"""
+    
+    score = 50  # Base score
+    
+    # Template bonuses
+    template_scores = {
+        "Question": 15, "Controversial": 20, "Story": 12, "List": 10,
+        "Data": 8, "Tip": 8, "Achievement": 5, "Insight": 7
+    }
+    score += template_scores.get(template, 5)
+    
+    # Tone bonuses
+    tone_scores = {
+        "Conversational": 10, "Humorous": 15, "Thought-provoking": 12,
+        "Personal/Storytelling": 10, "Inspirational": 8, "Educational": 5, "Professional": 3
+    }
+    score += tone_scores.get(tone, 3)
+    
+    # Content analysis
+    if "?" in post:
+        score += 8
+    if any(emoji in post for emoji in ["🤔", "💭", "🔥", "💡", "🚀"]):
+        score += 5
+    if len(post.split()) < 150:
+        score += 5
+    
+    # Hashtag analysis
+    hashtag_count = post.count('#')
+    if 3 <= hashtag_count <= 5:
+        score += 5
+    elif hashtag_count > 7:
+        score -= 3
+    
+    return min(95, max(25, score)) Topics", value=True, 
                                        help="Incorporate current LinkedIn trending topics")
     
     # Generate button
@@ -1639,36 +1784,452 @@ def show_preferences():
             )
             st.success("✅ Data exported successfully!")
 
-# Add the missing post generation functions (simplified versions for demo)
+# Complete post generation functions (restored from original)
 def generate_enhanced_posts(topic, industry, tone, audience, template, word_count, include_emojis, trending_focus):
     """Generate posts with all new features"""
-    # This is a simplified version - in production, you'd implement the full AI generation
+    
+    # Get trending topics for context
+    trending_topics = get_current_trending_topics()
+    industry_trends = trending_topics.get(industry, trending_topics["general"])
+    selected_trend = random.choice(industry_trends) if trending_focus else None
+    
+    # Get template structure
+    templates = get_post_templates()
+    template_info = templates.get(template, templates["Insight"])
+    
     posts = []
     
     for i in range(5):
-        post = f"""🚀 Here's my take on {topic} in {industry}:
-
-After years in {industry}, I've learned that {topic} isn't just about technology—it's about people.
-
-The companies winning with {topic} share one thing: they focus on human potential, not replacement.
-
-Key insights:
-• Start with why, not how
-• Involve your team from day one  
-• Measure impact, not just adoption
-
-What's your experience with {topic}? Share your thoughts below! {'🤔' if include_emojis else ''}
-
-#{industry.replace(' ', '')} #{topic.replace(' ', '')} #Innovation #Leadership"""
-        
+        post = create_structured_post(
+            topic, industry, tone, audience, template, template_info,
+            word_count, include_emojis, selected_trend, i
+        )
         posts.append(post)
     
     return posts
 
 def create_structured_post(topic, industry, tone, audience, template, template_info, word_count, include_emojis, trending_topic, variation):
     """Create a post following the selected template structure"""
-    # Simplified implementation
-    return f"Sample {template} post about {topic} for {audience} in {tone} tone."
+    
+    # Emojis based on tone and template
+    emoji_sets = {
+        "Professional": ["📊", "💼", "🎯", "📈", "⭐"],
+        "Conversational": ["💬", "🤔", "👥", "💡", "🚀"],
+        "Inspirational": ["✨", "🌟", "💪", "🔥", "🎉"],
+        "Educational": ["📚", "🧠", "💭", "🔍", "📖"],
+        "Humorous": ["😄", "🤣", "😅", "🎭", "😊"],
+        "Thought-provoking": ["🤯", "💭", "🧐", "⚡", "🔮"],
+        "Personal/Storytelling": ["📖", "🌍", "💫", "🎭", "🎪"]
+    }
+    
+    emojis = emoji_sets.get(tone, emoji_sets["Professional"])
+    
+    # Create post based on template
+    if template == "Story":
+        post = create_story_post(topic, industry, tone, trending_topic, emojis, include_emojis, word_count)
+    elif template == "Insight":
+        post = create_insight_post(topic, industry, tone, trending_topic, emojis, include_emojis, word_count)
+    elif template == "Tip":
+        post = create_tip_post(topic, industry, tone, trending_topic, emojis, include_emojis, word_count)
+    elif template == "Question":
+        post = create_question_post(topic, industry, tone, trending_topic, emojis, include_emojis, word_count)
+    elif template == "Data":
+        post = create_data_post(topic, industry, tone, trending_topic, emojis, include_emojis, word_count)
+    elif template == "Controversial":
+        post = create_controversial_post(topic, industry, tone, trending_topic, emojis, include_emojis, word_count)
+    elif template == "Achievement":
+        post = create_achievement_post(topic, industry, tone, trending_topic, emojis, include_emojis, word_count)
+    else:  # List
+        post = create_list_post(topic, industry, tone, trending_topic, emojis, include_emojis, word_count)
+    
+    return post
+
+def create_story_post(topic, industry, tone, trending_topic, emojis, include_emojis, word_count):
+    emoji = random.choice(emojis) if include_emojis else ""
+    
+    story_hooks = [
+        f"Last week, something happened that changed how I think about {topic}",
+        f"Three months ago, I would have never believed this about {topic}",
+        f"Here's what {topic} taught me about {industry}",
+        f"I used to think {topic} was overhyped. I was wrong."
+    ]
+    
+    hook = random.choice(story_hooks)
+    
+    if trending_topic:
+        connection = f"It connects directly to what we're seeing with {trending_topic.lower()}."
+    else:
+        connection = f"It's reshaping how we approach {industry.lower()}."
+    
+    lesson = f"The lesson? {topic} isn't just about technology—it's about people."
+    cta = f"What's your experience with {topic}? Share your story below! {emoji if include_emojis else ''}"
+    
+    hashtags = f"#{industry.replace(' ', '')} #{topic.replace(' ', '')} #Story #Leadership"
+    
+    post = f"""{hook}
+
+{connection}
+
+{lesson}
+
+{cta}
+
+{hashtags}"""
+    
+    return adjust_word_count(post, word_count)
+
+def create_insight_post(topic, industry, tone, trending_topic, emojis, include_emojis, word_count):
+    emoji = random.choice(emojis) if include_emojis else ""
+    
+    insights = [
+        f"{emoji} {topic} is fundamentally changing {industry}",
+        f"{emoji} Here's what most people miss about {topic}",
+        f"{emoji} The future of {topic} in {industry} isn't what you think"
+    ]
+    
+    observation = random.choice(insights)
+    
+    if trending_topic:
+        analysis = f"While everyone focuses on {trending_topic.lower()}, the real opportunity lies in how {topic} amplifies human potential."
+    else:
+        analysis = f"The companies winning with {topic} share one thing: they focus on augmentation, not replacement."
+    
+    implication = f"This means {industry} professionals need to rethink their approach."
+    discussion = f"What's your take on {topic}'s role in {industry}? {emoji if include_emojis else ''}"
+    
+    hashtags = f"#{industry.replace(' ', '')} #{topic.replace(' ', '')} #Innovation #ThoughtLeadership"
+    
+    post = f"""{observation}
+
+{analysis}
+
+{implication}
+
+{discussion}
+
+{hashtags}"""
+    
+    return adjust_word_count(post, word_count)
+
+def create_tip_post(topic, industry, tone, trending_topic, emojis, include_emojis, word_count):
+    emoji = random.choice(emojis) if include_emojis else ""
+    
+    problem = f"Struggling with {topic} implementation in {industry}?"
+    solution = f"Here's what's working for leading companies:"
+    
+    tips = [
+        f"{emoji if include_emojis else '•'} Start small and scale gradually",
+        f"{emoji if include_emojis else '•'} Focus on user experience first", 
+        f"{emoji if include_emojis else '•'} Measure impact, not just adoption"
+    ]
+    
+    outcome = f"Result: Smoother {topic} integration and better ROI."
+    cta = f"What tips would you add? {emoji if include_emojis else ''}"
+    
+    hashtags = f"#{industry.replace(' ', '')} #{topic.replace(' ', '')} #Tips #BestPractices"
+    
+    post = f"""{problem}
+
+{solution}
+
+{chr(10).join(tips)}
+
+{outcome}
+
+{cta}
+
+{hashtags}"""
+    
+    return adjust_word_count(post, word_count)
+
+def create_question_post(topic, industry, tone, trending_topic, emojis, include_emojis, word_count):
+    emoji = random.choice(emojis) if include_emojis else ""
+    
+    contexts = [
+        f"Quick question for {industry} professionals:",
+        f"Honest question about {topic}:",
+        f"Help me settle a debate:"
+    ]
+    
+    context = random.choice(contexts)
+    
+    questions = [
+        f"Is {topic} overhyped or underutilized in {industry}?",
+        f"What's the biggest {topic} misconception in our industry?",
+        f"If you could change one thing about {topic} adoption, what would it be?"
+    ]
+    
+    question = random.choice(questions)
+    take = f"My take: Most companies focus on the tech, but success comes from change management."
+    
+    if trending_topic:
+        discussion = f"Especially with {trending_topic.lower()} accelerating, we need better frameworks."
+    else:
+        discussion = f"The companies getting this right are the ones thinking long-term."
+    
+    invite = f"What's your perspective? Drop your thoughts below! {emoji if include_emojis else ''}"
+    
+    hashtags = f"#{industry.replace(' ', '')} #{topic.replace(' ', '')} #Discussion #Community"
+    
+    post = f"""{context}
+
+{question}
+
+{take} {discussion}
+
+{invite}
+
+{hashtags}"""
+    
+    return adjust_word_count(post, word_count)
+
+def create_data_post(topic, industry, tone, trending_topic, emojis, include_emojis, word_count):
+    emoji = random.choice(emojis) if include_emojis else ""
+    
+    stats = [
+        "73% of companies report improved efficiency",
+        "2.3x faster implementation than expected",
+        "41% reduction in operational costs",
+        "85% of users say it exceeded expectations"
+    ]
+    
+    statistic = f"{emoji if include_emojis else '📊'} New data on {topic} in {industry}: {random.choice(stats)}"
+    
+    context = f"This aligns with what we're seeing across the industry."
+    
+    if trending_topic:
+        analysis = f"Particularly interesting given the focus on {trending_topic.lower()}."
+    else:
+        analysis = f"The key factor? Companies that invested in training see 3x better results."
+    
+    takeaway = f"Bottom line: {topic} ROI depends more on implementation than technology."
+    cta = f"What metrics are you tracking? {emoji if include_emojis else ''}"
+    
+    hashtags = f"#{industry.replace(' ', '')} #{topic.replace(' ', '')} #Data #ROI"
+    
+    post = f"""{statistic}
+
+{context} {analysis}
+
+{takeaway}
+
+{cta}
+
+{hashtags}"""
+    
+    return adjust_word_count(post, word_count)
+
+def create_controversial_post(topic, industry, tone, trending_topic, emojis, include_emojis, word_count):
+    emoji = random.choice(emojis) if include_emojis else ""
+    
+    controversial_statements = [
+        f"Unpopular opinion: Most {industry} companies are doing {topic} completely wrong",
+        f"Hot take: {topic} isn't the problem in {industry}—leadership is",
+        f"Controversial view: {topic} hype is setting unrealistic expectations"
+    ]
+    
+    statement = random.choice(controversial_statements)
+    
+    evidence = f"Here's why: Companies focus on features instead of outcomes."
+    
+    if trending_topic:
+        nuance = f"Yes, {trending_topic.lower()} is important, but without proper strategy, it's just expensive technology."
+    else:
+        nuance = f"Don't get me wrong—{topic} is powerful. But success requires more than just implementation."
+    
+    debate = f"Am I completely off base here? Change my mind in the comments! {emoji if include_emojis else ''}"
+    
+    hashtags = f"#{industry.replace(' ', '')} #{topic.replace(' ', '')} #Controversial #ChangeMyMind"
+    
+    post = f"""{statement}.
+
+{evidence}
+
+{nuance}
+
+{debate}
+
+{hashtags}"""
+    
+    return adjust_word_count(post, word_count)
+
+def create_achievement_post(topic, industry, tone, trending_topic, emojis, include_emojis, word_count):
+    emoji = random.choice(emojis) if include_emojis else ""
+    
+    achievements = [
+        f"Milestone reached: Our {topic} implementation just hit 6 months",
+        f"Celebrating: Successfully deployed {topic} across our {industry} team",
+        f"Proud moment: Led our company's first {topic} initiative"
+    ]
+    
+    achievement = random.choice(achievements)
+    
+    journey = f"The journey wasn't easy—lots of late nights and tough conversations."
+    
+    lessons = f"Key lessons: Start with why, involve everyone, and iterate constantly."
+    
+    if trending_topic:
+        inspiration = f"To anyone working on {trending_topic.lower()} or {topic}: persistence pays off."
+    else:
+        inspiration = f"To anyone implementing {topic}: trust the process."
+    
+    thanks = f"Huge thanks to my team for making this possible! {emoji if include_emojis else ''}"
+    
+    hashtags = f"#{industry.replace(' ', '')} #{topic.replace(' ', '')} #Achievement #Teamwork"
+    
+    post = f"""{achievement} {emoji if include_emojis else '🎉'}
+
+{journey}
+
+{lessons}
+
+{inspiration}
+
+{thanks}
+
+{hashtags}"""
+    
+    return adjust_word_count(post, word_count)
+
+def create_list_post(topic, industry, tone, trending_topic, emojis, include_emojis, word_count):
+    emoji = random.choice(emojis) if include_emojis else ""
+    
+    setup = f"5 things I wish I knew about {topic} when starting in {industry}:"
+    
+    points = [
+        f"1{emoji if include_emojis else '.'} Implementation is 20% tech, 80% people",
+        f"2{emoji if include_emojis else '.'} Start with pilot projects, not company-wide rollouts",
+        f"3{emoji if include_emojis else '.'} Measure outcomes, not just outputs",
+        f"4{emoji if include_emojis else '.'} Training is an investment, not a cost",
+        f"5{emoji if include_emojis else '.'} Feedback loops are everything"
+    ]
+    
+    if trending_topic:
+        summary = f"Bonus: With {trending_topic.lower()} accelerating, these fundamentals matter more than ever."
+    else:
+        summary = f"The companies that get these right see 3x better adoption rates."
+    
+    engagement = f"What would you add to this list? {emoji if include_emojis else ''}"
+    
+    hashtags = f"#{industry.replace(' ', '')} #{topic.replace(' ', '')} #Tips #Lessons"
+    
+    post = f"""{setup}
+
+{chr(10).join(points)}
+
+{summary}
+
+{engagement}
+
+{hashtags}"""
+    
+    return adjust_word_count(post, word_count)
+
+def adjust_word_count(post, target_word_count):
+    """Adjust post length based on target word count"""
+    words = post.split()
+    current_count = len(words)
+    
+    if target_word_count == "Short (50-100 words)":
+        target_min, target_max = 50, 100
+    elif target_word_count == "Medium (100-200 words)":
+        target_min, target_max = 100, 200
+    else:  # Long (200-300 words)
+        target_min, target_max = 200, 300
+    
+    # If current post is already in target range, return as is
+    if target_min <= current_count <= target_max:
+        return post
+    
+    # If post is too long, truncate intelligently
+    if current_count > target_max:
+        lines = post.split('\n')
+        hashtag_lines = [line for line in lines if '#' in line]
+        content_lines = [line for line in lines if '#' not in line and line.strip()]
+        
+        # Keep essential content and hashtags
+        content_text = '\n'.join(content_lines)
+        content_words = content_text.split()
+        
+        if len(content_words) > target_max - 10:
+            truncated_content = ' '.join(content_words[:target_max-10])
+            return truncated_content + '\n\n' + ('\n'.join(hashtag_lines) if hashtag_lines else '')
+    
+    # If post is too short, expand it
+    if current_count < target_min:
+        return expand_post_content(post, target_min, target_max)
+    
+    return post
+
+def expand_post_content(post, target_min, target_max):
+    """Expand post content to meet word count requirements"""
+    
+    lines = post.split('\n')
+    hashtag_lines = [line for line in lines if '#' in line]
+    content_lines = [line for line in lines if '#' not in line and line.strip()]
+    
+    # Expansion strategies based on content type
+    expansion_elements = [
+        "Here's what this means for professionals:",
+        "This trend is accelerating across industries.",
+        "The data supports this shift in thinking.",
+        "Companies are already seeing positive results.",
+        "Early adopters are gaining competitive advantages.",
+        "This approach requires strategic planning and execution.",
+        "The key is balancing innovation with practical implementation.",
+        "Success depends on strong leadership and team buy-in.",
+        "Consider the long-term implications for your industry.",
+        "This represents a fundamental shift in how we work.",
+        "The impact extends beyond just technology adoption.",
+        "Organizations need to prepare for this evolution.",
+        "Training and change management are critical components.",
+        "The return on investment justifies the initial effort.",
+        "Building the right team structure is essential for success."
+    ]
+    
+    # Add contextual expansions
+    context_additions = [
+        "From my experience working with various teams, this approach consistently delivers results.",
+        "Industry research confirms what many professionals have suspected for months.",
+        "The most successful implementations share common characteristics worth noting.",
+        "Breaking this down into actionable steps makes the process more manageable.",
+        "Looking at case studies from leading companies reveals interesting patterns.",
+        "The timing couldn't be better given current market conditions.",
+        "This aligns perfectly with broader workplace transformation trends.",
+        "Smart organizations are already positioning themselves for this shift.",
+        "The competitive advantage goes to those who act decisively now.",
+        "Risk management strategies should account for these emerging realities."
+    ]
+    
+    # Calculate how many words we need to add
+    current_words = len(' '.join(content_lines).split())
+    words_needed = target_min - current_words
+    
+    expanded_content = content_lines.copy()
+    
+    # Add expansions until we reach target
+    while len(' '.join(expanded_content).split()) < target_min:
+        remaining_words = target_min - len(' '.join(expanded_content).split())
+        
+        if remaining_words > 15:
+            # Add longer contextual addition
+            addition = random.choice(context_additions)
+            expanded_content.insert(-1, addition)  # Insert before last line
+        else:
+            # Add shorter element
+            addition = random.choice(expansion_elements)
+            expanded_content.append(addition)
+        
+        # Prevent infinite loop
+        if len(' '.join(expanded_content).split()) > target_max:
+            break
+    
+    # Reconstruct the post
+    final_content = '\n'.join(expanded_content)
+    if hashtag_lines:
+        final_content += '\n\n' + '\n'.join(hashtag_lines)
+    
+    return final_content
 
 # Run the app
 if __name__ == "__main__":
